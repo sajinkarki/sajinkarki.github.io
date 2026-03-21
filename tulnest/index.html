@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tulnest — Tools That Work</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #f5f0e8;
+      --bg2: #ede8df;
+      --surface: #fff;
+      --border: #d8d0c0;
+      --text: #1a1612;
+      --muted: #8a8070;
+      --accent: #e85d25;
+      --accent2: #2563eb;
+      --font-display: 'Unbounded', sans-serif;
+      --font-serif: 'Instrument Serif', serif;
+      --font-mono: 'DM Mono', monospace;
+      --radius: 4px;
+      --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(245,240,232,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-logo-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .nav-links {
+      display: flex; gap: 2rem; list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color var(--transition);
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    .nav-portfolio {
+      font-size: 0.75rem;
+      padding: 0.45rem 1rem;
+      border: 1px solid var(--text);
+      border-radius: var(--radius);
+      transition: all var(--transition);
+    }
+    .nav-portfolio:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .nav-toggle {
+      display: none;
+      background: none; border: none;
+      font-size: 1.3rem; cursor: pointer;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 92vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 5rem 3rem;
+      position: relative;
+      gap: 4rem;
+    }
+
+    .hero-left { position: relative; }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 24px; height: 1px;
+      background: var(--muted);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title em {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+      font-size: 1.1em;
+    }
+
+    .hero-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 420px;
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-cta {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all var(--transition);
+      border: 1px solid transparent;
+      letter-spacing: 0.02em;
+    }
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+    .btn-primary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      border-color: var(--text);
+    }
+
+    /* Hero Right — Featured Tool Card */
+    .hero-right {
+      position: relative;
+    }
+
+    .hero-featured-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2.5rem;
+      box-shadow: 8px 8px 0 var(--border);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.8s ease both 0.3s;
+    }
+
+    .hero-featured-card::before {
+      content: 'FEATURED TOOL';
+      position: absolute; top: 1.2rem; right: 1.2rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .featured-tool-icon {
+      font-size: 3rem; margin-bottom: 1.2rem;
+      display: block;
+    }
+
+    .featured-tool-name {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.6rem;
+    }
+
+    .featured-tool-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .featured-tool-tags {
+      display: flex; gap: 0.4rem; flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .featured-tool-tags span {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+    }
+
+    .featured-tool-stats {
+      display: flex; gap: 2rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--border);
+    }
+    .stat { display: flex; flex-direction: column; }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Floating decorative elements */
+    .hero-deco {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--border);
+      pointer-events: none;
+    }
+    .hero-deco-1 { top: 10%; right: -5%; }
+    .hero-deco-2 { bottom: 15%; left: -5%; }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--text);
+      padding: 0.8rem 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .marquee-track {
+      display: inline-flex;
+      animation: marquee 20s linear infinite;
+    }
+    .marquee-track span {
+      font-family: var(--font-display);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--bg);
+      padding: 0 2rem;
+      text-transform: uppercase;
+    }
+    .marquee-track span.accent { color: var(--accent); }
+
+    /* ── TOOLS SECTION ── */
+    .section {
+      padding: 6rem 3rem;
+      position: relative;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 3rem;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .section-title em {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      border: 1px solid var(--border);
+      background: var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .tool-card {
+      background: var(--bg);
+      padding: 2rem;
+      transition: background var(--transition);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tool-card:hover { background: var(--surface); }
+
+    .tool-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.2rem;
+    }
+
+    .tool-icon {
+      width: 48px; height: 48px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .tool-status {
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+    .tool-status.live {
+      background: rgba(34,197,94,0.12);
+      color: #16a34a;
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .tool-status.soon {
+      background: rgba(234,179,8,0.12);
+      color: #b45309;
+      border: 1px solid rgba(234,179,8,0.3);
+    }
+
+    .tool-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .tool-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    .tool-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .tool-tags {
+      display: flex; gap: 0.3rem;
+    }
+    .tool-tags span {
+      font-size: 0.62rem;
+      color: var(--muted);
+      padding: 0.15rem 0.5rem;
+      background: var(--bg2);
+      border-radius: 2px;
+    }
+
+    .tool-link {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 500;
+      transition: gap var(--transition);
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .tool-link:hover { gap: 0.6rem; }
+
+    .tool-card.coming-soon {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* ── WHY TULNEST ── */
+    .why-section {
+      background: var(--text);
+      color: var(--bg);
+      padding: 6rem 3rem;
+    }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .why-left h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    .why-left h2 em {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .why-left p {
+      font-size: 0.88rem;
+      color: rgba(245,240,232,0.6);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    .why-points {
+      display: flex; flex-direction: column; gap: 1.2rem;
+    }
+
+    .why-point {
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+
+    .why-point-icon {
+      width: 32px; height: 32px;
+      background: rgba(245,240,232,0.08);
+      border: 1px solid rgba(245,240,232,0.15);
+      border-radius: 4px;
+      display: flex; align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .why-point-text h4 {
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+
+    .why-point-text p {
+      font-size: 0.75rem;
+      color: rgba(245,240,232,0.5);
+      margin: 0;
+    }
+
+    .why-right {
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+
+    .compare-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.2rem;
+      background: rgba(245,240,232,0.04);
+      border: 1px solid rgba(245,240,232,0.08);
+      border-radius: 4px;
+      font-size: 0.78rem;
+    }
+
+    .compare-label { color: rgba(245,240,232,0.6); }
+
+    .compare-vals {
+      display: flex; gap: 2rem;
+    }
+
+    .compare-val {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.2rem;
+    }
+
+    .compare-val span:first-child {
+      font-size: 0.65rem;
+      color: rgba(245,240,232,0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .yes { color: #4ade80; }
+    .no { color: #f87171; }
+
+    /* ── BY SAJIN ── */
+    .by-section {
+      padding: 5rem 3rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .by-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .by-avatar {
+      width: 64px; height: 64px;
+      background: var(--text);
+      border-radius: 50%;
+      margin: 0 auto 1.2rem;
+      display: flex; align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    .by-inner h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.8rem;
+    }
+
+    .by-inner p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 1.5rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .footer a { transition: color var(--transition); }
+    .footer a:hover { color: var(--accent); }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.03em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.6; }
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-right { display: none; }
+      .tools-grid { grid-template-columns: 1fr 1fr; }
+      .why-grid { grid-template-columns: 1fr; gap: 3rem; }
+    }
+
+    @media (max-width: 600px) {
+      .nav { padding: 1rem 1.2rem; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: fixed; inset: 0; top: 58px;
+        background: var(--bg);
+        align-items: center; justify-content: center;
+        gap: 2rem; z-index: 99;
+      }
+      .nav-toggle { display: block; }
+      .hero { padding: 3rem 1.2rem; }
+      .section { padding: 4rem 1.2rem; }
+      .why-section { padding: 4rem 1.2rem; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .footer { flex-direction: column; gap: 0.8rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">
+      <span class="nav-logo-dot"></span>
+      Tulnest
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#tools">Tools</a></li>
+      <li><a href="#why">Why Tulnest</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <a href="https://sajinkarki.github.io" class="nav-portfolio btn-outline btn">← Portfolio</a>
+    <button class="nav-toggle" id="navToggle">☰</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Free browser tools by Sajin Karki</div>
+      <h1 class="hero-title">
+        Tools that<br/>
+        <em>actually</em><br/>
+        work.
+      </h1>
+      <p class="hero-desc">
+        A nest of simple, fast, privacy-first tools —
+        built for real tasks. No sign up. No upload to servers.
+        No nonsense. Everything runs in your browser.
+      </p>
+      <div class="hero-cta">
+        <a href="#tools" class="btn btn-primary">Browse Tools →</a>
+        <a href="https://github.com/sajinkarki" class="btn btn-outline" target="_blank">GitHub ↗</a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="hero-featured-card">
+        <span class="featured-tool-icon">📄</span>
+        <div class="featured-tool-name">Word → PDF Converter</div>
+        <p class="featured-tool-desc">
+          Upload any .docx file and download a clean PDF instantly.
+          Your file never leaves your device — ever.
+        </p>
+        <div class="featured-tool-tags">
+          <span>🔒 Private</span>
+          <span>⚡ Instant</span>
+          <span>🌐 Offline</span>
+          <span>Free</span>
+        </div>
+        <div class="featured-tool-stats">
+          <div class="stat">
+            <span class="stat-num">0ms</span>
+            <span class="stat-label">Server time</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">∞</span>
+            <span class="stat-label">File size limit</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">$0</span>
+            <span class="stat-label">Forever</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-deco hero-deco-1">// client_side: true</div>
+      <div class="hero-deco hero-deco-2">// server_upload: false</div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span>Word to PDF</span><span class="accent">✦</span>
+      <span>100% Private</span><span class="accent">✦</span>
+      <span>No Sign Up</span><span class="accent">✦</span>
+      <span>Works Offline</span><span class="accent">✦</span>
+      <span>Free Forever</span><span class="accent">✦</span>
+      <span>Built in Nepal</span><span class="accent">✦</span>
+      <span>Open Source</span><span class="accent">✦</span>
+      <span>Word to PDF</span><span class="accent">✦</span>
+      <span>100% Private</span><span class="accent">✦</span>
+      <span>No Sign Up</span><span class="accent">✦</span>
+      <span>Works Offline</span><span class="accent">✦</span>
+      <span>Free Forever</span><span class="accent">✦</span>
+      <span>Built in Nepal</span><span class="accent">✦</span>
+      <span>Open Source</span><span class="accent">✦</span>
+    </div>
+  </div>
+
+  <!-- TOOLS -->
+  <section class="section" id="tools">
+    <div class="section-header reveal">
+      <div>
+        <div class="section-label">All Tools</div>
+        <h2 class="section-title">The <em>Nest</em></h2>
+      </div>
+      <a href="https://github.com/sajinkarki" class="btn btn-outline" target="_blank">All on GitHub ↗</a>
+    </div>
+
+    <div class="tools-grid">
+
+      <!-- Tool 1 — Word to PDF (LIVE) -->
+      <div class="tool-card reveal">
+        <div class="tool-card-top">
+          <div class="tool-icon">📄</div>
+          <span class="tool-status live">● Live</span>
+        </div>
+        <div class="tool-name">Word → PDF</div>
+        <p class="tool-desc">
+          Convert .docx files to clean PDFs instantly.
+          Choose page size, orientation, font size.
+          File never leaves your browser.
+        </p>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span>docx</span><span>pdf</span>
+          </div>
+          <a href="tools/word-to-pdf/" class="tool-link">
+            Use Tool →
+          </a>
+        </div>
+      </div>
+
+      <!-- Tool 2 — Image Compressor (Coming Soon) -->
+      <div class="tool-card coming-soon reveal">
+        <div class="tool-card-top">
+          <div class="tool-icon">🖼️</div>
+          <span class="tool-status soon">Coming Soon</span>
+        </div>
+        <div class="tool-name">Image Compressor</div>
+        <p class="tool-desc">
+          Compress JPG, PNG and WebP images without losing quality.
+          Batch compress multiple files at once.
+        </p>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span>jpg</span><span>png</span><span>webp</span>
+          </div>
+          <span class="tool-link">Soon</span>
+        </div>
+      </div>
+
+      <!-- Tool 3 — JSON Formatter (Coming Soon) -->
+      <div class="tool-card coming-soon reveal">
+        <div class="tool-card-top">
+          <div class="tool-icon">{ }</div>
+          <span class="tool-status soon">Coming Soon</span>
+        </div>
+        <div class="tool-name">JSON Formatter</div>
+        <p class="tool-desc">
+          Paste messy JSON and get it beautifully formatted,
+          validated, and ready to use. Syntax highlighted.
+        </p>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span>json</span><span>format</span>
+          </div>
+          <span class="tool-link">Soon</span>
+        </div>
+      </div>
+
+      <!-- Tool 4 — Markdown to HTML (Coming Soon) -->
+      <div class="tool-card coming-soon reveal">
+        <div class="tool-card-top">
+          <div class="tool-icon">📝</div>
+          <span class="tool-status soon">Coming Soon</span>
+        </div>
+        <div class="tool-name">Markdown → HTML</div>
+        <p class="tool-desc">
+          Write Markdown and preview the HTML output live.
+          Copy clean HTML with one click.
+        </p>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span>md</span><span>html</span>
+          </div>
+          <span class="tool-link">Soon</span>
+        </div>
+      </div>
+
+      <!-- Tool 5 — Color Picker (Coming Soon) -->
+      <div class="tool-card coming-soon reveal">
+        <div class="tool-card-top">
+          <div class="tool-icon">🎨</div>
+          <span class="tool-status soon">Coming Soon</span>
+        </div>
+        <div class="tool-name">Color Palette Generator</div>
+        <p class="tool-desc">
+          Generate beautiful color palettes from an image or
+          a base color. Export as CSS variables or JSON.
+        </p>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span>css</span><span>design</span>
+          </div>
+          <span class="tool-link">Soon</span>
+        </div>
+      </div>
+
+      <!-- Tool 6 — Password Generator (Coming Soon) -->
+      <div class="tool-card coming-soon reveal">
+        <div class="tool-card-top">
+          <div class="tool-icon">🔐</div>
+          <span class="tool-status soon">Coming Soon</span>
+        </div>
+        <div class="tool-name">Password Generator</div>
+        <p class="tool-desc">
+          Generate strong, secure passwords.
+          Fully client-side — no password ever sent to any server.
+        </p>
+        <div class="tool-footer">
+          <div class="tool-tags">
+            <span>security</span>
+          </div>
+          <span class="tool-link">Soon</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WHY TULNEST -->
+  <section class="why-section" id="why">
+    <div class="why-grid">
+      <div class="why-left reveal">
+        <h2>Why <em>Tulnest</em>?</h2>
+        <p>
+          Most online tools upload your files to their servers,
+          store your data, show you ads, and charge you for basic features.
+          Tulnest is different — everything runs in your browser.
+        </p>
+        <div class="why-points">
+          <div class="why-point">
+            <div class="why-point-icon">🔒</div>
+            <div class="why-point-text">
+              <h4>Zero Data Collection</h4>
+              <p>Your files never leave your device. Ever.</p>
+            </div>
+          </div>
+          <div class="why-point">
+            <div class="why-point-icon">⚡</div>
+            <div class="why-point-text">
+              <h4>Instant Processing</h4>
+              <p>No upload wait time. Runs on your CPU directly.</p>
+            </div>
+          </div>
+          <div class="why-point">
+            <div class="why-point-icon">🌐</div>
+            <div class="why-point-text">
+              <h4>Works Offline</h4>
+              <p>Load once, use forever. No internet needed after first visit.</p>
+            </div>
+          </div>
+          <div class="why-point">
+            <div class="why-point-icon">$</div>
+            <div class="why-point-text">
+              <h4>Free Forever</h4>
+              <p>No premium tier. No file size limit. No account required.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-right reveal">
+        <div class="compare-row">
+          <span class="compare-label">Feature</span>
+          <div class="compare-vals">
+            <div class="compare-val">
+              <span>Tulnest</span>
+            </div>
+            <div class="compare-val">
+              <span>Others</span>
+            </div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label">File stays on device</span>
+          <div class="compare-vals">
+            <div class="compare-val"><span class="yes">✓ Always</span></div>
+            <div class="compare-val"><span class="no">✗ Uploaded</span></div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label">Sign up required</span>
+          <div class="compare-vals">
+            <div class="compare-val"><span class="yes">✓ Never</span></div>
+            <div class="compare-val"><span class="no">✗ Often</span></div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label">File size limit</span>
+          <div class="compare-vals">
+            <div class="compare-val"><span class="yes">✓ None</span></div>
+            <div class="compare-val"><span class="no">✗ Limited</span></div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label">Works offline</span>
+          <div class="compare-vals">
+            <div class="compare-val"><span class="yes">✓ Yes</span></div>
+            <div class="compare-val"><span class="no">✗ No</span></div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label">Cost</span>
+          <div class="compare-vals">
+            <div class="compare-val"><span class="yes">✓ $0</span></div>
+            <div class="compare-val"><span class="no">✗ Freemium</span></div>
+          </div>
+        </div>
+        <div class="compare-row">
+          <span class="compare-label">Ads shown</span>
+          <div class="compare-vals">
+            <div class="compare-val"><span class="yes">✓ Never</span></div>
+            <div class="compare-val"><span class="no">✗ Always</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT / BY SAJIN -->
+  <section class="by-section" id="about">
+    <div class="by-inner reveal">
+      <div class="by-avatar">SK</div>
+      <h3>Built by Sajin Karki</h3>
+      <p>
+        Tulnest is a personal project — a collection of tools I built
+        because I needed them and couldn't find free, private alternatives.
+        Based in Kathmandu, Nepal. All tools are open source.
+      </p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="https://sajinkarki.github.io" class="btn btn-primary">Portfolio ↗</a>
+        <a href="https://github.com/sajinkarki" class="btn btn-outline" target="_blank">GitHub ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span class="footer-logo">Tulnest</span>
+    <span>Built with ❤️ in Kathmandu, Nepal</span>
+    <div style="display:flex; gap:1.5rem;">
+      <a href="https://sajinkarki.github.io">Portfolio</a>
+      <a href="https://github.com/sajinkarki" target="_blank">GitHub</a>
+      <a href="#tools">Tools</a>
+    </div>
+  </footer>
+
+  <script>
+    // Nav toggle
+    const toggle = document.getElementById('navToggle');
+    const links = document.getElementById('navLinks');
+    toggle?.addEventListener('click', () => links.classList.toggle('open'));
+    links?.querySelectorAll('a').forEach(a =>
+      a.addEventListener('click', () => links.classList.remove('open'))
+    );
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 100);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
