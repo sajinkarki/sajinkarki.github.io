@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Clock — Tulnest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --text: #e8e6e0;
+      --muted: #666;
+      --accent: #c8f135;
+      --accent2: #f13568;
+      --font-display: 'Unbounded', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.3;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(13,13,13,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 0.85rem; font-weight: 900;
+      color: var(--accent); letter-spacing: -0.03em;
+    }
+    .nav-back {
+      font-size: 0.75rem; color: var(--muted);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--accent); }
+
+    /* WRAPPER */
+    .wrapper {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 2rem;
+      position: relative; z-index: 1;
+      padding: 6rem 1rem 5rem;
+    }
+
+    /* CLOCK */
+    .clock-wrap {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .clock-glow {
+      position: absolute;
+      width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,241,53,0.07), transparent 70%);
+      pointer-events: none;
+    }
+
+    canvas#clockCanvas {
+      width: 300px; height: 300px;
+      filter: drop-shadow(0 0 24px rgba(200,241,53,0.12));
+    }
+
+    /* DIGITAL */
+    .digital-display { text-align: center; }
+
+    .digital-time {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+    .digital-time span { color: var(--accent); }
+
+    .digital-date {
+      font-size: 0.78rem; color: var(--muted);
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 0.2rem;
+    }
+
+    .digital-timezone {
+      font-size: 0.68rem; color: var(--muted);
+    }
+
+    /* SYNC */
+    .sync-status {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.7rem; color: var(--muted);
+      padding: 0.45rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+    }
+    .sync-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--muted); flex-shrink: 0;
+    }
+    .sync-dot.synced { background: var(--accent); animation: pulse 2s infinite; }
+    .sync-dot.syncing { background: #f59e0b; animation: pulse 0.5s infinite; }
+    .sync-dot.error { background: var(--accent2); }
+
+    /* TIMEZONE */
+    .timezone-wrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.6rem;
+    }
+    .timezone-label {
+      font-size: 0.68rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .timezone-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .timezone-select:focus { outline: none; border-color: var(--accent); }
+
+    /* WORLD CLOCKS */
+    .world-clocks {
+      display: flex; gap: 0.8rem; flex-wrap: wrap; justify-content: center;
+    }
+    .world-clock {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.7rem 1rem;
+      text-align: center; min-width: 90px;
+      transition: border-color 0.2s;
+    }
+    .world-clock:hover { border-color: var(--accent); }
+    .world-clock-city {
+      font-size: 0.62rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 0.25rem;
+    }
+    .world-clock-time {
+      font-family: var(--font-display);
+      font-size: 0.95rem; font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .world-clock-time.accent { color: var(--accent); }
+
+    /* FOOTER */
+    .footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 0.7rem 2rem;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.68rem; color: var(--muted);
+      background: rgba(13,13,13,0.9);
+      backdrop-filter: blur(12px);
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.4); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .wrapper > * {
+      animation: fadeUp 0.5s ease both;
+    }
+    .wrapper > *:nth-child(1) { animation-delay: 0.05s; }
+    .wrapper > *:nth-child(2) { animation-delay: 0.15s; }
+    .wrapper > *:nth-child(3) { animation-delay: 0.25s; }
+    .wrapper > *:nth-child(4) { animation-delay: 0.35s; }
+    .wrapper > *:nth-child(5) { animation-delay: 0.45s; }
+
+    @media (max-width: 600px) {
+      canvas#clockCanvas { width: 240px; height: 240px; }
+      .clock-glow { width: 260px; height: 260px; }
+      .world-clock { min-width: 75px; padding: 0.5rem 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo">⚡ Tulnest</div>
+    <a href="../../" class="nav-back">← Back to Tulnest</a>
+  </nav>
+
+  <div class="wrapper">
+
+    <!-- ANALOG CLOCK — drawn on canvas -->
+    <div class="clock-wrap">
+      <div class="clock-glow"></div>
+      <canvas id="clockCanvas" width="300" height="300"></canvas>
+    </div>
+
+    <!-- DIGITAL -->
+    <div class="digital-display">
+      <div class="digital-time" id="digitalTime">00<span>:</span>00<span>:</span>00</div>
+      <div class="digital-date" id="digitalDate">Loading...</div>
+      <div class="digital-timezone" id="digitalTimezone">Syncing...</div>
+    </div>
+
+    <!-- SYNC STATUS -->
+    <div class="sync-status">
+      <div class="sync-dot syncing" id="syncDot"></div>
+      <span id="syncText">Syncing with worldtimeapi.org...</span>
+    </div>
+
+    <!-- TIMEZONE -->
+    <div class="timezone-wrap">
+      <div class="timezone-label">Select Timezone</div>
+      <select class="timezone-select" id="timezoneSelect">
+        <option value="Asia/Kathmandu">🇳🇵 Kathmandu (NPT)</option>
+        <option value="UTC">🌐 UTC</option>
+        <option value="America/New_York">🇺🇸 New York (EST)</option>
+        <option value="Europe/London">🇬🇧 London (GMT)</option>
+        <option value="Asia/Tokyo">🇯🇵 Tokyo (JST)</option>
+        <option value="Asia/Dubai">🇦🇪 Dubai (GST)</option>
+        <option value="Asia/Kolkata">🇮🇳 India (IST)</option>
+        <option value="Australia/Sydney">🇦🇺 Sydney (AEST)</option>
+      </select>
+    </div>
+
+    <!-- WORLD CLOCKS -->
+    <div class="world-clocks">
+      <div class="world-clock">
+        <div class="world-clock-city">Kathmandu</div>
+        <div class="world-clock-time accent" id="wc-kathmandu">--:--</div>
+      </div>
+      <div class="world-clock">
+        <div class="world-clock-city">London</div>
+        <div class="world-clock-time" id="wc-london">--:--</div>
+      </div>
+      <div class="world-clock">
+        <div class="world-clock-city">New York</div>
+        <div class="world-clock-time" id="wc-newyork">--:--</div>
+      </div>
+      <div class="world-clock">
+        <div class="world-clock-city">Tokyo</div>
+        <div class="world-clock-time" id="wc-tokyo">--:--</div>
+      </div>
+      <div class="world-clock">
+        <div class="world-clock-city">Dubai</div>
+        <div class="world-clock-time" id="wc-dubai">--:--</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <span>Live Clock — <a href="../../">Tulnest</a></span>
+    <span>Synced via <a href="https://worldtimeapi.org" target="_blank">worldtimeapi.org</a></span>
+    <a href="https://github.com/sajinkarki/tulnest" target="_blank">Source ↗</a>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('clockCanvas');
+    const ctx = canvas.getContext('2d');
+    const SIZE = 300;
+    const CX = SIZE / 2;
+    const CY = SIZE / 2;
+    const R = 130;
+
+    let serverOffset = 0;
+    let selectedTimezone = 'Asia/Kathmandu';
+
+    // ── Draw the full clock ──
+    function drawClock(h, m, s, ms) {
+      ctx.clearRect(0, 0, SIZE, SIZE);
+
+      // Face
+      ctx.beginPath();
+      ctx.arc(CX, CY, R + 12, 0, Math.PI * 2);
+      ctx.fillStyle = '#161616';
+      ctx.fill();
+      ctx.strokeStyle = '#2a2a2a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Inner decorative ring
+      ctx.beginPath();
+      ctx.arc(CX, CY, R, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(200,241,53,0.06)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Minute & hour markers
+      for (let i = 0; i < 60; i++) {
+        const angle = (i * 6 - 90) * Math.PI / 180;
+        const isHour = i % 5 === 0;
+        const inner = isHour ? R - 14 : R - 7;
+        const outer = R - 1;
+        ctx.beginPath();
+        ctx.moveTo(
+          CX + inner * Math.cos(angle),
+          CY + inner * Math.sin(angle)
+        );
+        ctx.lineTo(
+          CX + outer * Math.cos(angle),
+          CY + outer * Math.sin(angle)
+        );
+        ctx.strokeStyle = isHour ? '#e8e6e0' : '#2a2a2a';
+        ctx.lineWidth = isHour ? 2.5 : 1;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+
+      // Hour numbers
+      ctx.font = 'bold 11px Unbounded, sans-serif';
+      ctx.fillStyle = '#e8e6e0';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 1; i <= 12; i++) {
+        const angle = (i * 30 - 90) * Math.PI / 180;
+        const nr = R - 28;
+        ctx.fillText(i,
+          CX + nr * Math.cos(angle),
+          CY + nr * Math.sin(angle)
+        );
+      }
+
+      // ── HANDS ──
+      // Smooth angles
+      const secAngle  = ((s + ms / 1000) * 6 - 90) * Math.PI / 180;
+      const minAngle  = ((m + s / 60) * 6 - 90) * Math.PI / 180;
+      const hourAngle = (((h % 12) + m / 60) * 30 - 90) * Math.PI / 180;
+
+      // Hour hand
+      drawHand(hourAngle, R * 0.5, 5, '#e8e6e0', -R * 0.1);
+
+      // Minute hand
+      drawHand(minAngle, R * 0.72, 3, '#e8e6e0', -R * 0.1);
+
+      // Second hand
+      drawHand(secAngle, R * 0.82, 1.5, '#c8f135', -R * 0.18);
+
+      // Center dot
+      ctx.beginPath();
+      ctx.arc(CX, CY, 7, 0, Math.PI * 2);
+      ctx.fillStyle = '#c8f135';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(CX, CY, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#0d0d0d';
+      ctx.fill();
+    }
+
+    function drawHand(angle, length, width, color, tailLength = 0) {
+      ctx.beginPath();
+      ctx.moveTo(
+        CX + tailLength * Math.cos(angle + Math.PI),
+        CY + tailLength * Math.sin(angle + Math.PI)
+      );
+      ctx.lineTo(
+        CX + length * Math.cos(angle),
+        CY + length * Math.sin(angle)
+      );
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // ── Get time in selected timezone ──
+    function getZoneTime(timezone) {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false, fractionalSecondDigits: 3
+      }).formatToParts(new Date(Date.now() + serverOffset));
+
+      const get = (type) => parseInt(parts.find(p => p.type === type)?.value || '0');
+      return {
+        h: get('hour'),
+        m: get('minute'),
+        s: get('second'),
+        ms: new Date(Date.now() + serverOffset).getMilliseconds()
+      };
+    }
+
+    function getZoneTimeStr(timezone) {
+      return new Date(Date.now() + serverOffset).toLocaleTimeString('en-US', {
+        timeZone: timezone,
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+    }
+
+    // ── Update everything ──
+    function update() {
+      const { h, m, s, ms } = getZoneTime(selectedTimezone);
+
+      // Draw clock
+      drawClock(h, m, s, ms);
+
+      // Digital time
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      const ss = String(s).padStart(2, '0');
+      document.getElementById('digitalTime').innerHTML =
+        `${hh}<span>:</span>${mm}<span>:</span>${ss}`;
+
+      // Date
+      document.getElementById('digitalDate').textContent =
+        new Date(Date.now() + serverOffset).toLocaleDateString('en-US', {
+          timeZone: selectedTimezone,
+          weekday: 'long', year: 'numeric',
+          month: 'long', day: 'numeric'
+        });
+
+      // Timezone label
+      document.getElementById('digitalTimezone').textContent =
+        `Timezone: ${selectedTimezone}`;
+
+      // World clocks
+      document.getElementById('wc-kathmandu').textContent = getZoneTimeStr('Asia/Kathmandu');
+      document.getElementById('wc-london').textContent    = getZoneTimeStr('Europe/London');
+      document.getElementById('wc-newyork').textContent   = getZoneTimeStr('America/New_York');
+      document.getElementById('wc-tokyo').textContent     = getZoneTimeStr('Asia/Tokyo');
+      document.getElementById('wc-dubai').textContent     = getZoneTimeStr('Asia/Dubai');
+    }
+
+    // ── Sync with worldtimeapi.org ──
+    async function syncTime() {
+      document.getElementById('syncDot').className = 'sync-dot syncing';
+      document.getElementById('syncText').textContent = 'Syncing with worldtimeapi.org...';
+      try {
+        const before = Date.now();
+        const res = await fetch(`https://worldtimeapi.org/api/timezone/${selectedTimezone}`);
+        const after = Date.now();
+        const data = await res.json();
+        const serverTime = new Date(data.datetime).getTime();
+        const latency = (after - before) / 2;
+        serverOffset = serverTime - after + latency;
+
+        document.getElementById('syncDot').className = 'sync-dot synced';
+        document.getElementById('syncText').textContent =
+          `Synced with worldtimeapi.org — latency: ${Math.round(latency)}ms`;
+      } catch {
+        serverOffset = 0;
+        document.getElementById('syncDot').className = 'sync-dot error';
+        document.getElementById('syncText').textContent =
+          'Using device time — could not reach time server';
+      }
+    }
+
+    // ── Timezone change ──
+    document.getElementById('timezoneSelect').addEventListener('change', (e) => {
+      selectedTimezone = e.target.value;
+      syncTime();
+    });
+
+    // ── Start ──
+    syncTime();
+    setInterval(update, 50);          // update every 50ms for smooth hands
+    setInterval(syncTime, 5 * 60000); // re-sync every 5 minutes
+    update();
+  </script>
+</body>
+</html>
