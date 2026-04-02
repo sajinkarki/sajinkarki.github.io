@@ -6,25 +6,124 @@
   <title>Sajin Karki — Dev Portfolio</title>
   <link rel="stylesheet" href="style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    .hero-3d-scene {
+      perspective: 1000px;
+      position: absolute; inset: 0;
+      pointer-events: none; overflow: hidden;
+    }
+    .hero-3d-card {
+      position: absolute; right: 6%; top: 50%;
+      transform: translateY(-50%) rotateY(-18deg) rotateX(6deg);
+      transform-style: preserve-3d;
+      width: clamp(260px, 30vw, 400px);
+    }
+    .card-3d-inner {
+      background: rgba(22,22,22,0.92);
+      border: 1px solid rgba(200,241,53,0.2);
+      border-radius: 16px; padding: 1.8rem;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 80px rgba(200,241,53,0.04);
+      backdrop-filter: blur(20px);
+      position: relative;
+    }
+    .card-3d-inner::before {
+      content: ''; position: absolute; inset: 0; border-radius: 16px;
+      background: linear-gradient(135deg, rgba(200,241,53,0.06), transparent 60%);
+      pointer-events: none;
+    }
+    .card-3d-dots { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .card-3d-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      animation: pulse3d 2s infinite;
+    }
+    .dot-g { background: #4ade80; }
+    .dot-y { background: #fbbf24; animation-delay: 0.3s; }
+    .dot-r { background: #f87171; animation-delay: 0.6s; }
+    .card-3d-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem; font-weight: 800; color: #e8e6e0;
+      letter-spacing: -0.02em; margin-bottom: 0.2rem;
+    }
+    .card-3d-sub { font-size: 0.68rem; color: #555; margin-bottom: 1.2rem; }
+    .card-3d-code {
+      background: rgba(0,0,0,0.5); border-radius: 8px; padding: 0.9rem;
+      font-family: 'Space Mono', monospace; font-size: 0.68rem;
+      line-height: 1.9; margin-bottom: 1rem;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .cl { display: block; }
+    .kw { color: #c8f135; } .fn { color: #60a5fa; }
+    .str { color: #f9a8d4; } .cm { color: #3a3a3a; } .nm { color: #fbbf24; }
+    .card-3d-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .c3t {
+      font-size: 0.6rem; padding: 0.18rem 0.55rem; border-radius: 999px;
+      border: 1px solid rgba(200,241,53,0.2); color: #c8f135;
+      font-family: 'Space Mono', monospace;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: rgba(200,241,53,0.15);
+      animation: floatP linear infinite; pointer-events: none;
+    }
+    @keyframes floatP {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.4; }
+      100% { transform: translateY(-80px) scale(1); opacity: 0; }
+    }
+    @keyframes pulse3d {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.5; transform:scale(1.3); }
+    }
+    @media (max-width: 900px) { .hero-3d-card { display: none; } }
+  </style>
 </head>
 <body>
 
-  <!-- NAV -->
   <nav class="nav">
     <div class="nav-logo">&lt;SajinKarki /&gt;</div>
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
       <li><a href="#projects">Projects</a></li>
       <li><a href="#resources">Resources</a></li>
-      <li><a href="https://sajinkarki.github.io/tulnest" target="_blank">tulnest ↗</a></li>
+      <li><a href="https://sajinkarki.github.io/tulnest/" target="_blank">Tulnest ↗</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
     <button class="nav-toggle" aria-label="Toggle menu">☰</button>
   </nav>
 
-  <!-- HERO -->
   <section class="hero" id="home">
     <div class="hero-grid-bg"></div>
+
+    <div class="hero-3d-scene" id="hero3dScene">
+      <div class="hero-3d-card" id="hero3dCard">
+        <div class="card-3d-inner">
+          <div class="card-3d-dots">
+            <div class="card-3d-dot dot-g"></div>
+            <div class="card-3d-dot dot-y"></div>
+            <div class="card-3d-dot dot-r"></div>
+          </div>
+          <div class="card-3d-title">Sajin Karki</div>
+          <div class="card-3d-sub">// Thinker & builder</div>
+          <div class="card-3d-code">
+            <span class="cl"><span class="kw">const</span> <span class="fn">build</span> = () => {</span>
+            <span class="cl">&nbsp;&nbsp;<span class="kw">return</span> <span class="str">"things that work"</span>;</span>
+            <span class="cl">};</span>
+            <span class="cl">&nbsp;</span>
+            <span class="cl"><span class="fn">tools</span>.<span class="fn">push</span>(<span class="str">"tulnest"</span>);</span>
+            <span class="cl"><span class="fn">projects</span>.length = <span class="nm">12</span>;</span>
+            <span class="cl"><span class="cm">// based in Kathmandu 🇳🇵</span></span>
+          </div>
+          <div class="card-3d-tags">
+            <span class="c3t">Python</span>
+            <span class="c3t">JavaScript</span>
+            <span class="c3t">React</span>
+            <span class="c3t">Git</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="hero-content">
       <span class="hero-tag">// Sajin Karki — Thinker & builder</span>
       <h1 class="hero-title">
@@ -39,7 +138,7 @@
       <div class="hero-cta">
         <a href="#projects" class="btn btn-primary">View Projects</a>
         <a href="https://github.com/sajinkarki" class="btn btn-ghost" target="_blank">GitHub ↗</a>
-        <a href="https://sajinkarki.github.io/tulnest" class="btn btn-ghost" target="_blank">tulnest ↗</a>
+        <a href="https://sajinkarki.github.io/tulnest/" class="btn btn-ghost" target="_blank">Tulnest ↗</a>
       </div>
     </div>
     <div class="hero-badge">
@@ -48,21 +147,14 @@
     </div>
   </section>
 
-  <!-- ABOUT -->
   <section class="section" id="about">
     <div class="container">
       <div class="section-label">01 — About</div>
       <div class="about-grid">
         <div class="about-text">
           <h2>Who I Am</h2>
-          <p>
-            A builder passionate about building small, meaningful digital things.
-            From CLI tools to web apps, I document and share everything I make —
-            because good work deserves to be seen.
-          </p>
-          <p>
-            Based in Kathmandu. Building globally.
-          </p>
+          <p>A Thinker passionate about building small, meaningful digital things. From CLI tools to web apps, I document and share everything I make — because good work deserves to be seen.</p>
+          <p>Based in Kathmandu. Building globally.</p>
           <div class="stack-tags">
             <span>Python</span><span>JavaScript</span><span>React</span>
             <span>Node.js</span><span>HTML/CSS</span><span>Git</span>
@@ -77,95 +169,43 @@
     </div>
   </section>
 
-  <!-- PROJECTS -->
   <section class="section section-dark" id="projects">
     <div class="container">
       <div class="section-label light">02 — Projects</div>
       <h2 class="section-title light">Mini Projects</h2>
       <div class="projects-grid">
 
-        <!-- Weather Dashboard -->
-        <div class="project-card">
+        <div class="project-card featured">
           <div class="project-header">
             <span class="project-type">Web App</span>
             <div class="project-links">
-              <a href="https://github.com/sajinkarki/weather-dashboard" title="GitHub" target="_blank">
+              <a href="https://github.com/sajinkarki/tulnest" title="GitHub" target="_blank">
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
               </a>
-              <a href="https://sajinkarki.github.io/tulnest/tools/weather-dashboard/" title="Live Demo on Tulnest" target="_blank">↗</a>
+              <a href="https://sajinkarki.github.io/tulnest/tools/weather-tracker/" title="Live Demo" target="_blank">↗</a>
             </div>
           </div>
-          <h3>Weather Dashboard</h3>
-          <p>Real-time weather app using OpenWeather API with location search, 5-day forecast, and animated weather icons.</p>
-          <div class="project-tech"><span>HTML</span><span>CSS</span><span>JS</span><span>API</span></div>
+          <div class="featured-badge">⭐ Featured</div>
+          <h3>Weather Tracker</h3>
+          <p>Real-time weather with location search, 5-day forecast, humidity, wind speed, and UV index. Powered by OpenWeatherMap API.</p>
+          <div class="project-tech"><span>HTML</span><span>CSS</span><span>JS</span><span>OpenWeather API</span></div>
         </div>
 
-        <!-- Word to PDF — Featured -->
-        <div class="project-card featured">
+        <div class="project-card">
           <div class="project-header">
             <span class="project-type">Tool</span>
             <div class="project-links">
               <a href="https://github.com/sajinkarki/tulnest" title="GitHub" target="_blank">
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
               </a>
-              <a href="https://sajinkarki.github.io/tulnest/tools/word-to-pdf/" title="Live Demo on Tulnest" target="_blank">↗</a>
+              <a href="https://sajinkarki.github.io/tulnest/tools/word-to-pdf/" title="Live Demo" target="_blank">↗</a>
             </div>
           </div>
-          <div class="featured-badge">⭐ Featured</div>
           <h3>Word to PDF Converter</h3>
           <p>Upload any .docx file and instantly convert it to a clean, downloadable PDF — fully in-browser, no server, no upload to third party.</p>
           <div class="project-tech"><span>HTML</span><span>CSS</span><span>JS</span><span>mammoth.js</span><span>jsPDF</span></div>
         </div>
 
-        <!-- File Organizer -->
-        <div class="project-card">
-          <div class="project-header">
-            <span class="project-type">CLI Tool</span>
-            <div class="project-links">
-              <a href="https://github.com/sajinkarki/file-organizer" title="GitHub" target="_blank">
-                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
-              </a>
-              <a href="https://github.com/sajinkarki/file-organizer" title="View on GitHub" target="_blank">↗</a>
-            </div>
-          </div>
-          <h3>File Organizer Script</h3>
-          <p>Python CLI that auto-sorts a messy downloads folder into categorized subfolders by file type and date.</p>
-          <div class="project-tech"><span>Python</span><span>argparse</span><span>pathlib</span></div>
-        </div>
-
-        <!-- Nepal COVID Tracker -->
-        <div class="project-card">
-          <div class="project-header">
-            <span class="project-type">Data Viz</span>
-            <div class="project-links">
-              <a href="https://github.com/sajinkarki/nepal-covid-tracker" title="GitHub" target="_blank">
-                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
-              </a>
-              <a href="https://sajinkarki.github.io/tulnest/tools/nepal-covid-tracker/" title="Live Demo on Tulnest" target="_blank">↗</a>
-            </div>
-          </div>
-          <h3>Nepal COVID Tracker</h3>
-          <p>Interactive dashboard visualising COVID-19 statistics for Nepal using Chart.js and live API data.</p>
-          <div class="project-tech"><span>JS</span><span>Chart.js</span><span>REST API</span></div>
-        </div>
-
-        <!-- Snake Game -->
-        <div class="project-card">
-          <div class="project-header">
-            <span class="project-type">Game</span>
-            <div class="project-links">
-              <a href="https://github.com/sajinkarki/snake-game" title="GitHub" target="_blank">
-                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
-              </a>
-              <a href="https://sajinkarki.github.io/tulnest/tools/snake-game/" title="Play on Tulnest" target="_blank">↗</a>
-            </div>
-          </div>
-          <h3>Snake in the Browser</h3>
-          <p>Classic Snake game rebuilt with vanilla JS and HTML5 Canvas. Includes hi-score persistence via localStorage.</p>
-          <div class="project-tech"><span>Canvas API</span><span>JS</span></div>
-        </div>
-
-        <!-- Live Clock -->
         <div class="project-card">
           <div class="project-header">
             <span class="project-type">Tool</span>
@@ -173,7 +213,7 @@
               <a href="https://github.com/sajinkarki/tulnest" title="GitHub" target="_blank">
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
               </a>
-              <a href="https://sajinkarki.github.io/tulnest/tools/live-clock/" title="Live Demo on Tulnest" target="_blank">↗</a>
+              <a href="https://sajinkarki.github.io/tulnest/tools/live-clock/" title="Live Demo" target="_blank">↗</a>
             </div>
           </div>
           <h3>Live Analog Clock</h3>
@@ -181,7 +221,6 @@
           <div class="project-tech"><span>JS</span><span>Canvas</span><span>API</span></div>
         </div>
 
-        <!-- Password Generator -->
         <div class="project-card">
           <div class="project-header">
             <span class="project-type">Tool</span>
@@ -189,22 +228,29 @@
               <a href="https://github.com/sajinkarki/tulnest" title="GitHub" target="_blank">
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
               </a>
-              <a href="https://sajinkarki.github.io/tulnest/tools/password-generator/" title="Live Demo on Tulnest" target="_blank">↗</a>
+              <a href="https://sajinkarki.github.io/tulnest/tools/password-generator/" title="Live Demo" target="_blank">↗</a>
             </div>
           </div>
           <h3>Password Generator</h3>
-          <p>Generate strong, secure passwords with custom length, special characters and numbers. 100% client-side — nothing ever sent to a server.</p>
+          <p>Generate strong, secure passwords with custom length, special characters and numbers. 100% client-side — nothing sent to any server.</p>
           <div class="project-tech"><span>JS</span><span>Crypto API</span></div>
         </div>
 
-        <!-- More on GitHub -->
-        <div class="project-card add-card">
-          <span>+</span>
-          <p>More on GitHub</p>
-          <a href="https://github.com/sajinkarki" class="btn btn-ghost" target="_blank">View All ↗</a>
+        <div class="project-card">
+          <div class="project-header">
+            <span class="project-type">CLI Tool</span>
+            <div class="project-links">
+              <a href="https://github.com/sajinkarki/file-organizer" title="GitHub" target="_blank">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
+              </a>
+              <a href="https://github.com/sajinkarki/file-organizer" target="_blank">↗</a>
+            </div>
+          </div>
+          <h3>File Organizer Script</h3>
+          <p>Python CLI that auto-sorts a messy downloads folder into categorized subfolders by file type and date.</p>
+          <div class="project-tech"><span>Python</span><span>argparse</span><span>pathlib</span></div>
         </div>
 
-        <!-- More on GitHub -->
         <div class="project-card add-card">
           <span>+</span>
           <p>More on GitHub</p>
@@ -215,59 +261,40 @@
     </div>
   </section>
 
-  <!-- RESOURCES -->
   <section class="section" id="resources">
     <div class="container">
       <div class="section-label">03 — Resources</div>
       <h2 class="section-title">Resources & Downloads</h2>
       <p class="section-desc">Cheatsheets, templates, and guides I've made — free to use.</p>
       <div class="resources-list">
-
         <div class="resource-row">
           <div class="resource-icon">📄</div>
-          <div class="resource-info">
-            <h4>Git Cheatsheet</h4>
-            <p>All the git commands I actually use — from init to rebase.</p>
-          </div>
+          <div class="resource-info"><h4>Git Cheatsheet</h4><p>All the git commands I actually use — from init to rebase.</p></div>
           <div class="resource-meta"><span class="badge">PDF</span></div>
           <a href="resources/git-cheatsheet.pdf" class="btn btn-sm" download>Download</a>
         </div>
-
         <div class="resource-row">
           <div class="resource-icon">🐍</div>
-          <div class="resource-info">
-            <h4>Python Starter Template</h4>
-            <p>Project scaffold with logging, argparse, .env support, and test setup.</p>
-          </div>
+          <div class="resource-info"><h4>Python Starter Template</h4><p>Project scaffold with logging, argparse, .env support, and test setup.</p></div>
           <div class="resource-meta"><span class="badge">ZIP</span></div>
           <a href="resources/python-starter.zip" class="btn btn-sm" download>Download</a>
         </div>
-
         <div class="resource-row">
           <div class="resource-icon">🌐</div>
-          <div class="resource-info">
-            <h4>HTML/CSS Portfolio Template</h4>
-            <p>The base template this site is built on — fully commented and ready to customise.</p>
-          </div>
+          <div class="resource-info"><h4>HTML/CSS Portfolio Template</h4><p>The base template this site is built on — fully commented and ready to customise.</p></div>
           <div class="resource-meta"><span class="badge">ZIP</span></div>
           <a href="resources/portfolio-template.zip" class="btn btn-sm" download>Download</a>
         </div>
-
         <div class="resource-row">
           <div class="resource-icon">📝</div>
-          <div class="resource-info">
-            <h4>Freelance Proposal Template</h4>
-            <p>A clean Markdown-based proposal template I use for freelance projects.</p>
-          </div>
+          <div class="resource-info"><h4>Freelance Proposal Template</h4><p>A clean Markdown-based proposal template I use for freelance projects.</p></div>
           <div class="resource-meta"><span class="badge">MD</span></div>
           <a href="resources/proposal-template.md" class="btn btn-sm" download>Download</a>
         </div>
-
       </div>
     </div>
   </section>
 
-  <!-- TULNEST BANNER -->
   <section class="section tulnest-banner">
     <div class="container">
       <div class="tulnest-inner">
@@ -276,45 +303,19 @@
           <h2>Visit <span class="accent">Tulnest</span></h2>
           <p>A dedicated site housing all my browser-based tools — free, private, and open source. No sign up. No server uploads. Everything runs in your browser.</p>
           <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
-            <a href="https://sajinkarki.github.io/tulnest" class="btn btn-primary" target="_blank">Go to Tulnest →</a>
+            <a href="https://sajinkarki.github.io/tulnest/" class="btn btn-primary" target="_blank">Go to Tulnest →</a>
             <a href="https://github.com/sajinkarki/tulnest" class="btn btn-ghost" target="_blank">Source Code ↗</a>
           </div>
         </div>
         <div class="tulnest-tools">
-          <div class="mini-tool-card live">
-            <span>📄</span>
-            <div>
-              <strong>Word → PDF</strong>
-              <span class="live-dot">● Live</span>
-            </div>
-          </div>
-          <div class="mini-tool-card soon">
-            <span>🖼️</span>
-            <div>
-              <strong>Image Compressor</strong>
-              <span class="soon-dot">Coming Soon</span>
-            </div>
-          </div>
-          <div class="mini-tool-card soon">
-            <span>{ }</span>
-            <div>
-              <strong>JSON Formatter</strong>
-              <span class="soon-dot">Coming Soon</span>
-            </div>
-          </div>
-          <div class="mini-tool-card soon">
-            <span>🔐</span>
-            <div>
-              <strong>Password Generator</strong>
-              <span class="soon-dot">Coming Soon</span>
-            </div>
-          </div>
+          <div class="mini-tool-card live"><span>🌤️</span><div><strong>Weather Tracker</strong><span class="live-dot">● Live</span></div></div>
+          <div class="mini-tool-card live"><span>📄</span><div><strong>Word → PDF</strong><span class="live-dot">● Live</span></div></div>
+          <div class="mini-tool-card live"><span>🕐</span><div><strong>Live Clock</strong><span class="live-dot">● Live</span></div></div>
+          <div class="mini-tool-card live"><span>🔐</span><div><strong>Password Generator</strong><span class="live-dot">● Live</span></div></div>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- CONTACT -->
 
   <section class="section section-dark" id="contact">
     <div class="container contact-wrap">
@@ -324,42 +325,71 @@
       <div class="contact-grid">
         <form class="contact-form" action="https://formspree.io/f/xkoqkopp" method="POST" id="contactForm">
           <input type="hidden" name="_subject" value="New message from Sajin Karki's Portfolio" />
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" name="name" placeholder="Your name" required />
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" name="email" placeholder="your@email.com" required />
-          </div>
-          <div class="form-group">
-            <label>Message</label>
-            <textarea rows="5" name="message" placeholder="What's on your mind?" required></textarea>
-          </div>
+          <div class="form-group"><label>Name</label><input type="text" name="name" placeholder="Your name" required /></div>
+          <div class="form-group"><label>Email</label><input type="email" name="email" placeholder="your@email.com" required /></div>
+          <div class="form-group"><label>Message</label><textarea rows="5" name="message" placeholder="What's on your mind?" required></textarea></div>
           <button type="submit" class="btn btn-primary">Send Message →</button>
         </form>
         <div class="contact-links">
-          <a href="/cdn-cgi/l/email-protection#91e8fee4d1f4e9f0fce1fdf4bff2fefc" class="contact-link">
-            <span class="contact-link-icon">✉</span>
-            <span><span class="__cf_email__" data-cfemail="6b12041e2b0e130a061b070e45080406">[email&#160;protected]</span></span>
+          <a href="mailto:sajin@example.com" class="contact-link">
+            <span class="contact-link-icon">✉</span><span>sajin@example.com</span>
           </a>
-          <a href="https://github.com/yourusername" class="contact-link" target="_blank">
-            <span class="contact-link-icon">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg>
-            </span>
-            <span>github.com/yourusername</span>
+          <a href="https://github.com/sajinkarki" class="contact-link" target="_blank">
+            <span class="contact-link-icon"><svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.91 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.373-12-12-12z"/></svg></span>
+            <span>github.com/sajinkarki</span>
           </a>
-          <a href="https://linkedin.com/in/yourusername" class="contact-link" target="_blank">
-            <span class="contact-link-icon">in</span>
-            <span>LinkedIn Profile</span>
+          <a href="https://linkedin.com/in/sajinkarki" class="contact-link" target="_blank">
+            <span class="contact-link-icon">in</span><span>LinkedIn Profile</span>
           </a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- FOOTER -->
   <footer class="footer">
     <div class="container footer-inner">
       <span>&lt;SajinKarki /&gt; © 2025</span>
-      <span>Built with HTML, CSS & ❤�
+      <span>Built with HTML, CSS & ❤️</span>
+      <a href="#home">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    // ── 3D HERO MOUSE TRACKING ──
+    const scene = document.getElementById('hero3dScene');
+    const card  = document.getElementById('hero3dCard');
+    let tx = -18, ty = 6, cx = -18, cy2 = 6;
+
+    document.addEventListener('mousemove', (e) => {
+      const dx = (e.clientX - window.innerWidth  / 2) / (window.innerWidth  / 2);
+      const dy = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+      tx = -18 + dx * 12;
+      ty =   6 - dy * 8;
+    });
+
+    (function animateCard() {
+      cx  += (tx  - cx)  * 0.06;
+      cy2 += (ty  - cy2) * 0.06;
+      if (card) card.style.transform =
+        `translateY(-50%) rotateY(${cx}deg) rotateX(${cy2}deg)`;
+      requestAnimationFrame(animateCard);
+    })();
+
+    // ── FLOATING PARTICLES ──
+    function spawnParticle() {
+      if (!scene) return;
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const s = Math.random() * 4 + 2;
+      p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;` +
+        `animation-duration:${Math.random()*8+6}s;animation-delay:${Math.random()*3}s;` +
+        `opacity:${Math.random()*0.3+0.1};`;
+      scene.appendChild(p);
+      setTimeout(() => p.remove(), 14000);
+    }
+    setInterval(spawnParticle, 700);
+    for (let i = 0; i < 8; i++) spawnParticle();
+  </script>
+</body>
+</html>
