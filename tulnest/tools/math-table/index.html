@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Math Table Generator — Tulnest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --text: #e8e6e0;
+      --muted: #666;
+      --accent: #c8f135;
+      --accent2: #f13568;
+      --font-display: 'Unbounded', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --radius: 6px;
+      --transition: 0.2s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      position: relative; overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.2;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 30%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* NAV */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 0.85rem; font-weight: 900;
+      color: var(--accent); letter-spacing: -0.03em;
+    }
+    .nav-back {
+      font-size: 0.75rem; color: var(--muted);
+      text-decoration: none; transition: color var(--transition);
+    }
+    .nav-back:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      text-align: center; padding: 3.5rem 2rem 2rem;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(200,241,53,0.07), transparent);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.68rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent);
+      padding: 0.28rem 0.85rem;
+      border: 1px solid rgba(200,241,53,0.3);
+      border-radius: 999px; margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 900; letter-spacing: -0.04em;
+      margin-bottom: 0.6rem;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p {
+      color: var(--muted); font-size: 0.83rem;
+      max-width: 480px; margin: 0 auto; line-height: 1.8;
+    }
+
+    /* MAIN */
+    .main {
+      max-width: 1000px; margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+      flex: 1; position: relative; z-index: 1;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex; gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      flex: 1; padding: 0.8rem;
+      background: var(--surface);
+      border: none; color: var(--muted);
+      font-family: var(--font-display);
+      font-size: 0.72rem; font-weight: 700;
+      cursor: pointer; transition: all var(--transition);
+      letter-spacing: -0.01em;
+      border-right: 1px solid var(--border);
+    }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn.active { background: var(--accent); color: #0d0d0d; }
+    .tab-btn:hover:not(.active) { color: var(--accent); background: var(--surface2); }
+
+    /* CONTROLS */
+    .controls-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.2rem;
+    }
+
+    .ctrl-group { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .ctrl-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .ctrl-row {
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      flex: 1; height: 4px;
+      border-radius: 999px;
+      background: var(--border);
+      outline: none; cursor: pointer;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    .ctrl-val {
+      font-family: var(--font-display);
+      font-size: 1rem; font-weight: 900;
+      color: var(--accent); min-width: 36px;
+      text-align: right;
+    }
+
+    /* BUTTONS */
+    .action-row {
+      display: flex; gap: 0.8rem; margin-top: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.65rem 1.3rem;
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; transition: all var(--transition);
+      border: 2px solid transparent;
+    }
+    .btn-primary {
+      background: var(--accent); color: #0d0d0d;
+    }
+    .btn-primary:hover {
+      background: transparent;
+      border-color: var(--accent); color: var(--accent);
+    }
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border); color: var(--text);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* SINGLE TABLE OUTPUT */
+    .single-output {
+      display: none;
+    }
+    .single-output.show { display: block; }
+
+    .table-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .table-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem; font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+    .table-title span { color: var(--accent); }
+
+    .table-rows {
+      display: flex; flex-direction: column;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 80px 40px 80px 40px 1fr;
+      align-items: center;
+      padding: 0.7rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      transition: background var(--transition);
+      gap: 0.5rem;
+    }
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: var(--surface2); }
+    .table-row:nth-child(even) { background: rgba(255,255,255,0.01); }
+
+    .tr-num {
+      font-family: var(--font-display);
+      font-size: 0.9rem; font-weight: 700; color: var(--accent);
+    }
+    .tr-op { color: var(--muted); font-size: 0.85rem; text-align: center; }
+    .tr-by { font-size: 0.9rem; }
+    .tr-eq { color: var(--muted); font-size: 0.85rem; text-align: center; }
+    .tr-result {
+      font-family: var(--font-display);
+      font-size: 1rem; font-weight: 900; color: var(--text);
+      text-align: right;
+    }
+
+    /* ALL TABLES */
+    .all-output {
+      display: none;
+    }
+    .all-output.show { display: block; }
+
+    .all-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .mini-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .mini-table:hover { border-color: var(--accent); }
+
+    .mini-table-header {
+      background: var(--surface2);
+      padding: 0.6rem 1rem;
+      font-family: var(--font-display);
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .mini-table-copy {
+      font-size: 0.62rem; color: var(--muted);
+      background: none; border: none;
+      cursor: pointer; transition: color var(--transition);
+      font-family: var(--font-mono);
+    }
+    .mini-table-copy:hover { color: var(--accent); }
+
+    .mini-table-rows { padding: 0.4rem 0; }
+
+    .mini-row {
+      display: flex; justify-content: space-between;
+      padding: 0.25rem 1rem;
+      font-size: 0.78rem;
+      transition: background var(--transition);
+    }
+    .mini-row:hover { background: var(--surface2); }
+    .mini-row span:first-child { color: var(--muted); }
+    .mini-row span:last-child {
+      font-family: var(--font-display);
+      font-weight: 700; font-size: 0.82rem;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center; padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+
+    /* COPY TOAST */
+    .toast {
+      position: fixed; bottom: 5rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--accent); color: #0d0d0d;
+      padding: 0.6rem 1.4rem;
+      border-radius: 999px;
+      font-size: 0.78rem; font-weight: 700;
+      font-family: var(--font-display);
+      opacity: 0; transition: all 0.3s ease;
+      pointer-events: none; z-index: 200;
+    }
+    .toast.show {
+      opacity: 1; transform: translateX(-50%) translateY(0);
+    }
+
+    /* FOOTER */
+    .footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 0.7rem 2.5rem;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.68rem; color: var(--muted);
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(14px);
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .table-row, .mini-table {
+      animation: fadeUp 0.3s ease both;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .controls-grid { grid-template-columns: 1fr; }
+      .all-grid { grid-template-columns: 1fr; }
+      .nav { padding: 0.8rem 1.2rem; }
+      .main { padding: 0 1rem 5rem; }
+      .footer { flex-direction: column; gap: 0.4rem; text-align: center; }
+    }
+
+    @media print {
+      .nav, .footer, .action-row, .tabs, .controls-wrap, .toast { display: none !important; }
+      body { background: white; color: black; }
+      .table-row { border-bottom: 1px solid #eee; }
+      .tr-num, .tr-result { color: #333; }
+      .mini-table { border: 1px solid #ccc; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo">⚡ Tulnest</div>
+    <a href="../../" class="nav-back">← Back to Tulnest</a>
+  </nav>
+
+  <section class="hero">
+    <span class="hero-tag">Free — No Login Needed</span>
+    <h1>Math <span>Table</span> Generator</h1>
+    <p>Generate multiplication tables instantly. Pick any number, set your range, and view or print clean, formatted tables.</p>
+  </section>
+
+  <div class="main">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tabSingle" onclick="switchTab('single')">Single Table</button>
+      <button class="tab-btn" id="tabAll" onclick="switchTab('all')">All Tables (2–20)</button>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="controls-wrap">
+      <div class="controls-grid">
+
+        <div class="ctrl-group" id="singleCtrl">
+          <div class="ctrl-label">Table of</div>
+          <div class="ctrl-row">
+            <input type="range" class="slider" id="tableNum"
+              min="1" max="100" value="2"
+              oninput="document.getElementById('tableNumVal').textContent=this.value; generate()"/>
+            <span class="ctrl-val" id="tableNumVal">2</span>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <div class="ctrl-label">Multiply from</div>
+          <div class="ctrl-row">
+            <input type="range" class="slider" id="rangeFrom"
+              min="1" max="50" value="1"
+              oninput="document.getElementById('rangeFromVal').textContent=this.value; generate()"/>
+            <span class="ctrl-val" id="rangeFromVal">1</span>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <div class="ctrl-label">Multiply up to</div>
+          <div class="ctrl-row">
+            <input type="range" class="slider" id="rangeTo"
+              min="2" max="100" value="20"
+              oninput="document.getElementById('rangeToVal').textContent=this.value; generate()"/>
+            <span class="ctrl-val" id="rangeToVal">20</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" onclick="generate()">Generate →</button>
+        <button class="btn btn-ghost" onclick="copyTable()">Copy Table</button>
+        <button class="btn btn-ghost" onclick="window.print()">Print 🖨️</button>
+      </div>
+    </div>
+
+    <!-- SINGLE TABLE -->
+    <div class="single-output" id="singleOutput">
+      <div class="table-header">
+        <div class="table-title" id="tableTitle">Table of <span>2</span></div>
+        <span style="font-size:0.72rem; color:var(--muted)" id="tableRange">×1 to ×20</span>
+      </div>
+      <div class="table-rows" id="tableRows"></div>
+    </div>
+
+    <!-- ALL TABLES -->
+    <div class="all-output" id="allOutput">
+      <div class="all-grid" id="allGrid"></div>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" id="emptyState">
+      <span class="empty-icon">🔢</span>
+      <div>Adjust the controls above and click Generate</div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">Copied!</div>
+
+  <footer class="footer">
+    <span>Math Table Generator — <a href="../../">Tulnest</a></span>
+    <span>Free Forever · No Login · Works Offline</span>
+    <a href="https://github.com/sajinkarki/tulnest/tree/main/tools/math-table" target="_blank">Source ↗</a>
+  </footer>
+
+  <script>
+    let currentTab = 'single';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('tabSingle').classList.toggle('active', tab === 'single');
+      document.getElementById('tabAll').classList.toggle('active', tab === 'all');
+      document.getElementById('singleCtrl').style.display = tab === 'single' ? '' : 'none';
+      generate();
+    }
+
+    function generate() {
+      const from = parseInt(document.getElementById('rangeFrom').value);
+      const to   = parseInt(document.getElementById('rangeTo').value);
+
+      document.getElementById('emptyState').style.display = 'none';
+
+      if (currentTab === 'single') {
+        generateSingle(from, to);
+      } else {
+        generateAll(from, to);
+      }
+    }
+
+    function generateSingle(from, to) {
+      const n = parseInt(document.getElementById('tableNum').value);
+      document.getElementById('allOutput').classList.remove('show');
+      document.getElementById('singleOutput').classList.add('show');
+
+      document.getElementById('tableTitle').innerHTML = `Table of <span>${n}</span>`;
+      document.getElementById('tableRange').textContent = `×${from} to ×${to}`;
+
+      const container = document.getElementById('tableRows');
+      container.innerHTML = '';
+
+      for (let i = from; i <= to; i++) {
+        const result = n * i;
+        const row = document.createElement('div');
+        row.className = 'table-row';
+        row.style.animationDelay = `${(i - from) * 0.02}s`;
+        row.innerHTML = `
+          <span class="tr-num">${n}</span>
+          <span class="tr-op">×</span>
+          <span class="tr-by">${i}</span>
+          <span class="tr-eq">=</span>
+          <span class="tr-result">${result}</span>`;
+        container.appendChild(row);
+      }
+    }
+
+    function generateAll(from, to) {
+      document.getElementById('singleOutput').classList.remove('show');
+      document.getElementById('allOutput').classList.add('show');
+
+      const grid = document.getElementById('allGrid');
+      grid.innerHTML = '';
+
+      for (let n = 2; n <= 20; n++) {
+        const mini = document.createElement('div');
+        mini.className = 'mini-table';
+        mini.style.animationDelay = `${(n - 2) * 0.03}s`;
+
+        let rows = '';
+        for (let i = from; i <= to; i++) {
+          rows += `<div class="mini-row">
+            <span>${n} × ${i}</span>
+            <span>${n * i}</span>
+          </div>`;
+        }
+
+        mini.innerHTML = `
+          <div class="mini-table-header">
+            Table of ${n}
+            <button class="mini-table-copy" onclick="copyMiniTable(${n}, ${from}, ${to}, this)">Copy</button>
+          </div>
+          <div class="mini-table-rows">${rows}</div>`;
+
+        grid.appendChild(mini);
+      }
+    }
+
+    function copyTable() {
+      const n    = parseInt(document.getElementById('tableNum').value);
+      const from = parseInt(document.getElementById('rangeFrom').value);
+      const to   = parseInt(document.getElementById('rangeTo').value);
+      const lines = [];
+      for (let i = from; i <= to; i++) {
+        lines.push(`${n} × ${i} = ${n * i}`);
+      }
+      copyToClipboard(lines.join('\n'));
+    }
+
+    function copyMiniTable(n, from, to, btn) {
+      const lines = [];
+      for (let i = from; i <= to; i++) {
+        lines.push(`${n} × ${i} = ${n * i}`);
+      }
+      copyToClipboard(lines.join('\n'));
+      btn.textContent = 'Copied!';
+      btn.style.color = 'var(--accent)';
+      setTimeout(() => { btn.textContent = 'Copy'; btn.style.color = ''; }, 1500);
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    }
+
+    // ── Init ──
+    document.getElementById('singleCtrl').style.display = '';
+    generate();
+  </script>
+</body>
+</html>
