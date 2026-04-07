@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>URL Tools — Tulnest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0d0d; --surface: #161616; --surface2: #1e1e1e;
+      --surface3: #252525; --border: #2a2a2a; --border2: #333;
+      --text: #e8e6e0; --text2: #a8b0c0; --muted: #666;
+      --accent: #c8f135; --accent-dim: rgba(200,241,53,0.1);
+      --blue: #60a5fa; --pink: #f472b6; --gold: #fbbf24;
+      --font-display: 'Unbounded', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --radius: 8px; --transition: 0.2s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-mono);
+      min-height: 100vh; display: flex; flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 0%, rgba(200,241,53,0.04), transparent),
+        radial-gradient(ellipse 50% 30% at 80% 10%, rgba(96,165,250,0.03), transparent);
+    }
+
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(13,13,13,0.92); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border); position: relative; z-index: 1;
+    }
+    .nav-logo { font-family: var(--font-display); font-size: 0.85rem; font-weight: 900; color: var(--accent); letter-spacing: -0.03em; }
+    .nav-back { font-size: 0.75rem; color: var(--muted); text-decoration: none; transition: color var(--transition); }
+    .nav-back:hover { color: var(--accent); }
+
+    .hero {
+      text-align: center; padding: 3.5rem 2rem 2rem;
+      position: relative; z-index: 1;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(200,241,53,0.06), transparent);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block; font-size: 0.68rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent);
+      padding: 0.28rem 0.85rem;
+      border: 1px solid rgba(200,241,53,0.3); border-radius: 999px;
+      margin-bottom: 1rem; background: rgba(200,241,53,0.05);
+    }
+    .hero h1 { font-family: var(--font-display); font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 900; letter-spacing: -0.04em; margin-bottom: 0.6rem; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); font-size: 0.83rem; max-width: 480px; margin: 0 auto; line-height: 1.8; }
+
+    .main {
+      max-width: 860px; margin: 0 auto;
+      padding: 0 1.5rem 5rem; flex: 1;
+      position: relative; z-index: 1;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex; gap: 0;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      flex: 1; padding: 0.75rem 0.5rem;
+      background: var(--surface); border: none;
+      color: var(--muted); font-family: var(--font-display);
+      font-size: 0.65rem; font-weight: 700; letter-spacing: -0.01em;
+      cursor: pointer; transition: all var(--transition);
+      border-right: 1px solid var(--border);
+    }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn.active { background: var(--accent); color: #0d0d0d; }
+    .tab-btn:hover:not(.active) { color: var(--accent); background: var(--surface2); }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* SHARED PANEL STYLES */
+    .input-wrap { margin-bottom: 1rem; }
+    .input-label {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--muted);
+      margin-bottom: 0.5rem; display: block;
+    }
+    .input-field, .textarea-field {
+      width: 100%;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--font-mono); font-size: 0.85rem;
+      padding: 0.85rem 1rem; transition: all var(--transition);
+      outline: none;
+    }
+    .textarea-field { min-height: 120px; resize: vertical; line-height: 1.6; }
+    .input-field:focus, .textarea-field:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,241,53,0.08);
+      background: var(--surface2);
+    }
+
+    .result-box {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem;
+      font-family: var(--font-mono); font-size: 0.82rem;
+      color: var(--accent); line-height: 1.6;
+      word-break: break-all; min-height: 60px;
+      position: relative; margin-top: 0.8rem;
+    }
+    .result-empty { color: var(--muted); font-style: italic; }
+
+    .btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.6rem 1.1rem; border-radius: var(--radius);
+      font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: all var(--transition);
+      border: 1px solid transparent;
+    }
+    .btn-primary { background: var(--accent); color: #0d0d0d; }
+    .btn-primary:hover { background: transparent; border-color: var(--accent); color: var(--accent); }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text2); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .copy-btn {
+      position: absolute; top: 0.6rem; right: 0.6rem;
+      font-size: 0.65rem; color: var(--muted);
+      background: var(--surface3); border: 1px solid var(--border);
+      border-radius: 4px; padding: 0.2rem 0.55rem;
+      cursor: pointer; font-family: var(--font-mono);
+      transition: all var(--transition);
+    }
+    .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ENCODER/DECODER */
+    .swap-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; margin: 0.5rem auto;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 50%; color: var(--muted); cursor: pointer;
+      font-size: 1rem; transition: all var(--transition);
+    }
+    .swap-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(180deg); }
+
+    /* URL PARSER */
+    .parse-grid {
+      display: grid; gap: 0;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      overflow: hidden; margin-top: 0.8rem;
+    }
+    .parse-row {
+      display: flex; align-items: flex-start;
+      padding: 0.7rem 1rem; border-bottom: 1px solid var(--border);
+      gap: 1rem; transition: background var(--transition);
+    }
+    .parse-row:last-child { border-bottom: none; }
+    .parse-row:hover { background: var(--surface2); }
+    .parse-key { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; min-width: 100px; flex-shrink: 0; padding-top: 0.1rem; }
+    .parse-val { font-size: 0.82rem; color: var(--accent); word-break: break-all; }
+    .parse-val.empty { color: var(--muted); font-style: italic; }
+
+    /* QR CODE */
+    .qr-wrap {
+      display: flex; gap: 2rem; align-items: flex-start;
+      margin-top: 1rem; flex-wrap: wrap;
+    }
+    .qr-canvas-wrap {
+      background: white; border-radius: var(--radius);
+      padding: 1rem; display: flex; align-items: center;
+      justify-content: center; min-width: 180px; min-height: 180px;
+      flex-shrink: 0;
+    }
+    #qrCanvas { display: block; }
+    .qr-actions { display: flex; flex-direction: column; gap: 0.8rem; justify-content: center; }
+    .qr-size-row { display: flex; align-items: center; gap: 0.8rem; }
+    .qr-size-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .qr-slider { -webkit-appearance: none; width: 120px; height: 4px; border-radius: 999px; background: var(--border); outline: none; cursor: pointer; }
+    .qr-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    .qr-size-val { font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; color: var(--accent); min-width: 40px; }
+
+    /* URL DIFF */
+    .diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .diff-result { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-top: 0.8rem; }
+    .diff-match { color: var(--accent); font-size: 0.8rem; margin-bottom: 0.5rem; }
+    .diff-section { margin-bottom: 0.8rem; }
+    .diff-section-title { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+    .diff-line { font-size: 0.78rem; padding: 0.2rem 0.5rem; border-radius: 3px; margin-bottom: 0.2rem; }
+    .diff-same { color: var(--text2); }
+    .diff-only-a { background: rgba(248,113,113,0.1); color: #f87171; }
+    .diff-only-b { background: rgba(74,222,128,0.1); color: #4ade80; }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 5rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--accent); color: #0d0d0d;
+      padding: 0.5rem 1.2rem; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 700;
+      font-family: var(--font-display);
+      opacity: 0; transition: all 0.3s ease;
+      pointer-events: none; z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 0.7rem 2.5rem; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.68rem; color: var(--muted);
+      background: rgba(13,13,13,0.92); backdrop-filter: blur(14px);
+      z-index: 50;
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+    .panel.active { animation: fadeUp 0.3s ease; }
+
+    @media (max-width: 600px) {
+      .nav { padding: 0.8rem 1.2rem; }
+      .main { padding: 0 1rem 5rem; }
+      .tab-btn { font-size: 0.58rem; padding: 0.65rem 0.3rem; }
+      .diff-grid { grid-template-columns: 1fr; }
+      .footer { flex-direction: column; gap: 0.4rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav" style="position:sticky;top:0;z-index:100;">
+    <div class="nav-logo">⚡ Tulnest</div>
+    <a href="../../" class="nav-back">← Back to Tulnest</a>
+  </nav>
+
+  <section class="hero">
+    <span class="hero-tag">5 Tools in 1 — No Login</span>
+    <h1>URL <span>Tools</span></h1>
+    <p>Encode, decode, parse, compare, and generate QR codes from URLs — all in your browser.</p>
+  </section>
+
+  <div class="main">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('encode')">Encode / Decode</button>
+      <button class="tab-btn" onclick="switchTab('parse')">URL Parser</button>
+      <button class="tab-btn" onclick="switchTab('qr')">QR Generator</button>
+      <button class="tab-btn" onclick="switchTab('diff')">URL Diff</button>
+      <button class="tab-btn" onclick="switchTab('build')">URL Builder</button>
+    </div>
+
+    <!-- ENCODE / DECODE -->
+    <div class="panel active" id="panel-encode">
+      <div class="input-wrap">
+        <label class="input-label">Input</label>
+        <textarea class="textarea-field" id="encodeInput" placeholder="Paste any text or URL here..." oninput="encodeAuto()"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="encodeURL()">Encode →</button>
+        <button class="btn btn-ghost" onclick="decodeURL()">← Decode</button>
+        <button class="btn btn-ghost" onclick="clearEncode()">Clear</button>
+      </div>
+      <div class="input-wrap" style="margin-top:1rem;">
+        <label class="input-label">Result</label>
+        <div class="result-box" id="encodeResult">
+          <span class="result-empty">Result appears here...</span>
+          <button class="copy-btn" onclick="copyResult('encodeResult')">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL PARSER -->
+    <div class="panel" id="panel-parse">
+      <div class="input-wrap">
+        <label class="input-label">Paste any URL</label>
+        <input type="text" class="input-field" id="parseInput"
+          placeholder="https://example.com:8080/path?key=value&foo=bar#section"
+          oninput="parseURL()"/>
+      </div>
+      <div class="parse-grid" id="parseGrid">
+        <div class="parse-row"><span class="parse-key">Protocol</span><span class="parse-val empty" id="p-protocol">—</span></div>
+        <div class="parse-row"><span class="parse-key">Host</span><span class="parse-val empty" id="p-host">—</span></div>
+        <div class="parse-row"><span class="parse-key">Port</span><span class="parse-val empty" id="p-port">—</span></div>
+        <div class="parse-row"><span class="parse-key">Pathname</span><span class="parse-val empty" id="p-path">—</span></div>
+        <div class="parse-row"><span class="parse-key">Query String</span><span class="parse-val empty" id="p-query">—</span></div>
+        <div class="parse-row"><span class="parse-key">Parameters</span><span class="parse-val empty" id="p-params">—</span></div>
+        <div class="parse-row"><span class="parse-key">Hash / Anchor</span><span class="parse-val empty" id="p-hash">—</span></div>
+        <div class="parse-row"><span class="parse-key">Origin</span><span class="parse-val empty" id="p-origin">—</span></div>
+      </div>
+    </div>
+
+    <!-- QR GENERATOR -->
+    <div class="panel" id="panel-qr">
+      <div class="input-wrap">
+        <label class="input-label">URL or Text for QR Code</label>
+        <input type="text" class="input-field" id="qrInput"
+          placeholder="https://sajinkarki.github.io"
+          oninput="generateQR()"/>
+      </div>
+      <div class="qr-wrap">
+        <div class="qr-canvas-wrap">
+          <canvas id="qrCanvas" width="180" height="180"></canvas>
+        </div>
+        <div class="qr-actions">
+          <div class="qr-size-row">
+            <span class="qr-size-label">Size</span>
+            <input type="range" class="qr-slider" id="qrSize" min="100" max="400" value="180" oninput="document.getElementById('qrSizeVal').textContent=this.value+'px';generateQR()"/>
+            <span class="qr-size-val" id="qrSizeVal">180px</span>
+          </div>
+          <button class="btn btn-primary" onclick="downloadQR()">Download PNG ↓</button>
+          <button class="btn btn-ghost" onclick="copyQRDataURL()">Copy as Image</button>
+          <div style="font-size:0.7rem;color:var(--muted);line-height:1.6;">
+            Scan with any phone camera.<br/>Works offline after first load.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL DIFF -->
+    <div class="panel" id="panel-diff">
+      <div class="diff-grid">
+        <div class="input-wrap">
+          <label class="input-label">URL A</label>
+          <input type="text" class="input-field" id="diffA" placeholder="https://example.com/page?v=1" oninput="diffURLs()"/>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">URL B</label>
+          <input type="text" class="input-field" id="diffB" placeholder="https://example.com/page?v=2&new=true" oninput="diffURLs()"/>
+        </div>
+      </div>
+      <div class="diff-result" id="diffResult">
+        <div style="color:var(--muted);font-size:0.8rem;">Enter two URLs above to compare them.</div>
+      </div>
+    </div>
+
+    <!-- URL BUILDER -->
+    <div class="panel" id="panel-build">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div class="input-wrap">
+          <label class="input-label">Protocol</label>
+          <select class="input-field" id="bProtocol" onchange="buildURL()" style="cursor:pointer;">
+            <option value="https">https://</option>
+            <option value="http">http://</option>
+          </select>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Domain</label>
+          <input type="text" class="input-field" id="bDomain" placeholder="example.com" oninput="buildURL()"/>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Port (optional)</label>
+          <input type="text" class="input-field" id="bPort" placeholder="8080" oninput="buildURL()"/>
+        </div>
+        <div class="input-wrap">
+          <label class="input-label">Path</label>
+          <input type="text" class="input-field" id="bPath" placeholder="/api/v1/users" oninput="buildURL()"/>
+        </div>
+      </div>
+      <div class="input-wrap">
+        <label class="input-label">Query Parameters (key=value, one per line)</label>
+        <textarea class="textarea-field" id="bParams" placeholder="name=Sajin&#10;city=Kathmandu&#10;lang=en" oninput="buildURL()" style="min-height:80px;"></textarea>
+      </div>
+      <div class="input-wrap">
+        <label class="input-label">Hash / Anchor</label>
+        <input type="text" class="input-field" id="bHash" placeholder="section-id" oninput="buildURL()"/>
+      </div>
+      <label class="input-label" style="margin-top:0.5rem;">Built URL</label>
+      <div class="result-box" id="buildResult">
+        <span class="result-empty">Fill in the fields above...</span>
+        <button class="copy-btn" onclick="copyResult('buildResult')">Copy</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">Copied!</div>
+
+  <footer class="footer">
+    <span>URL Tools — <a href="../../">Tulnest</a></span>
+    <span>100% Client-Side · No Data Sent Anywhere</span>
+    <a href="https://github.com/sajinkarki/tulnest/tree/main/tools/url-tools" target="_blank">Source ↗</a>
+  </footer>
+
+  <!-- QR Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>
+    // ── Tab switching ──
+    function switchTab(id) {
+      document.querySelectorAll('.tab-btn').forEach((b,i) => {
+        b.classList.toggle('active', ['encode','parse','qr','diff','build'][i] === id);
+      });
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + id).classList.add('active');
+    }
+
+    // ── Toast ──
+    function showToast(msg = 'Copied!') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // ── Copy result ──
+    function copyResult(id) {
+      const el = document.getElementById(id);
+      const text = el.textContent.replace('Copy','').trim();
+      if (!text || text.includes('appears here') || text.includes('Fill in')) return;
+      navigator.clipboard.writeText(text).then(() => showToast());
+    }
+
+    // ══════════════════════
+    // ENCODE / DECODE
+    // ══════════════════════
+    function encodeURL() {
+      const val = document.getElementById('encodeInput').value.trim();
+      if (!val) return;
+      setResult('encodeResult', encodeURIComponent(val));
+    }
+
+    function decodeURL() {
+      const val = document.getElementById('encodeInput').value.trim();
+      if (!val) return;
+      try { setResult('encodeResult', decodeURIComponent(val)); }
+      catch { setResult('encodeResult', 'Invalid encoded string', true); }
+    }
+
+    function encodeAuto() {
+      const val = document.getElementById('encodeInput').value;
+      if (!val) { setResult('encodeResult', '', false, true); return; }
+    }
+
+    function clearEncode() {
+      document.getElementById('encodeInput').value = '';
+      setResult('encodeResult', '', false, true);
+    }
+
+    function setResult(id, text, isError = false, isEmpty = false) {
+      const el = document.getElementById(id);
+      if (isEmpty || !text) {
+        el.innerHTML = '<span class="result-empty">Result appears here...</span><button class="copy-btn" onclick="copyResult(\'' + id + '\')">Copy</button>';
+        return;
+      }
+      el.style.color = isError ? '#f87171' : 'var(--accent)';
+      el.innerHTML = `${text}<button class="copy-btn" onclick="copyResult('${id}')">Copy</button>`;
+    }
+
+    // ══════════════════════
+    // URL PARSER
+    // ══════════════════════
+    function parseURL() {
+      const raw = document.getElementById('parseInput').value.trim();
+      const set = (id, val, isEmpty) => {
+        const el = document.getElementById(id);
+        el.textContent = val || '—';
+        el.className = 'parse-val' + (isEmpty || !val ? ' empty' : '');
+      };
+
+      if (!raw) {
+        ['p-protocol','p-host','p-port','p-path','p-query','p-params','p-hash','p-origin']
+          .forEach(id => set(id, '', true));
+        return;
+      }
+
+      try {
+        const u = new URL(raw);
+        set('p-protocol', u.protocol.replace(':',''));
+        set('p-host', u.hostname);
+        set('p-port', u.port || '(default)');
+        set('p-path', u.pathname);
+        set('p-query', u.search || '(none)');
+
+        let params = '';
+        u.searchParams.forEach((v, k) => { params += `${k} = ${v}\n`; });
+        set('p-params', params.trim() || '(none)');
+        set('p-hash', u.hash.replace('#','') || '(none)');
+        set('p-origin', u.origin);
+      } catch {
+        set('p-protocol', 'Invalid URL — check format', false);
+        ['p-host','p-port','p-path','p-query','p-params','p-hash','p-origin']
+          .forEach(id => set(id, '', true));
+      }
+    }
+
+    // ══════════════════════
+    // QR GENERATOR
+    // ══════════════════════
+    let qrInstance = null;
+
+    function generateQR() {
+      const text = document.getElementById('qrInput').value.trim()
+        || 'https://sajinkarki.github.io';
+      const size = parseInt(document.getElementById('qrSize').value);
+      const canvas = document.getElementById('qrCanvas');
+      canvas.width = size; canvas.height = size;
+
+      // Draw QR using canvas manually (simple implementation)
+      drawQROnCanvas(canvas, text, size);
+    }
+
+    function drawQROnCanvas(canvas, text, size) {
+      // Use QRCode.js library via a hidden div
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, size, size);
+
+      try {
+        // Create temp div for QRCode.js
+        const tmp = document.createElement('div');
+        tmp.style.cssText = 'position:absolute;left:-9999px;top:0;';
+        document.body.appendChild(tmp);
+
+        new QRCode(tmp, {
+          text: text,
+          width: size, height: size,
+          colorDark: '#0d0d0d',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        setTimeout(() => {
+          const img = tmp.querySelector('img') || tmp.querySelector('canvas');
+          if (img) {
+            if (img.tagName === 'CANVAS') {
+              ctx.drawImage(img, 0, 0, size, size);
+            } else {
+              const i = new Image();
+              i.onload = () => ctx.drawImage(i, 0, 0, size, size);
+              i.src = img.src;
+            }
+          }
+          document.body.removeChild(tmp);
+        }, 100);
+      } catch (e) {
+        ctx.fillStyle = '#c8f135';
+        ctx.font = `bold ${size/10}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText('QR Error', size/2, size/2);
+      }
+    }
+
+    function downloadQR() {
+      const canvas = document.getElementById('qrCanvas');
+      const a = document.createElement('a');
+      a.download = 'tulnest-qr.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      showToast('Downloaded!');
+    }
+
+    function copyQRDataURL() {
+      const canvas = document.getElementById('qrCanvas');
+      canvas.toBlob(blob => {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        showToast('Image copied!');
+      });
+    }
+
+    // ══════════════════════
+    // URL DIFF
+    // ══════════════════════
+    function diffURLs() {
+      const a = document.getElementById('diffA').value.trim();
+      const b = document.getElementById('diffB').value.trim();
+      const el = document.getElementById('diffResult');
+
+      if (!a || !b) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Enter two URLs above to compare them.</div>';
+        return;
+      }
+
+      let ua, ub;
+      try { ua = new URL(a); } catch { el.innerHTML = '<div style="color:#f87171;font-size:0.8rem;">URL A is invalid.</div>'; return; }
+      try { ub = new URL(b); } catch { el.innerHTML = '<div style="color:#f87171;font-size:0.8rem;">URL B is invalid.</div>'; return; }
+
+      const fields = [
+        ['Protocol', ua.protocol, ub.protocol],
+        ['Host',     ua.hostname, ub.hostname],
+        ['Port',     ua.port||'default', ub.port||'default'],
+        ['Path',     ua.pathname, ub.pathname],
+        ['Hash',     ua.hash||'none', ub.hash||'none'],
+      ];
+
+      let html = '';
+      let same = 0, diff = 0;
+
+      fields.forEach(([key, va, vb]) => {
+        const match = va === vb;
+        if (match) same++; else diff++;
+        html += `<div class="diff-section">
+          <div class="diff-section-title">${key}</div>
+          ${match
+            ? `<div class="diff-line diff-same">${va}</div>`
+            : `<div class="diff-line diff-only-a">A: ${va}</div>
+               <div class="diff-line diff-only-b">B: ${vb}</div>`
+          }
+        </div>`;
+      });
+
+      // Compare query params
+      const paramsA = Object.fromEntries(ua.searchParams);
+      const paramsB = Object.fromEntries(ub.searchParams);
+      const allKeys = new Set([...Object.keys(paramsA), ...Object.keys(paramsB)]);
+      let paramHtml = '';
+
+      allKeys.forEach(k => {
+        const va = paramsA[k], vb = paramsB[k];
+        if (va === vb) { paramHtml += `<div class="diff-line diff-same">${k} = ${va}</div>`; same++; }
+        else if (va && !vb) { paramHtml += `<div class="diff-line diff-only-a">A only: ${k} = ${va}</div>`; diff++; }
+        else if (!va && vb) { paramHtml += `<div class="diff-line diff-only-b">B only: ${k} = ${vb}</div>`; diff++; }
+        else { paramHtml += `<div class="diff-line diff-only-a">A: ${k} = ${va}</div><div class="diff-line diff-only-b">B: ${k} = ${vb}</div>`; diff++; }
+      });
+
+      if (paramHtml) html += `<div class="diff-section"><div class="diff-section-title">Query Params</div>${paramHtml}</div>`;
+
+      el.innerHTML = `<div class="diff-match" style="margin-bottom:1rem;">
+        ✓ ${same} matching · ${diff} different
+      </div>${html}`;
+    }
+
+    // ══════════════════════
+    // URL BUILDER
+    // ══════════════════════
+    function buildURL() {
+      const proto  = document.getElementById('bProtocol').value;
+      const domain = document.getElementById('bDomain').value.trim();
+      const port   = document.getElementById('bPort').value.trim();
+      const path   = document.getElementById('bPath').value.trim();
+      const params = document.getElementById('bParams').value.trim();
+      const hash   = document.getElementById('bHash').value.trim();
+
+      if (!domain) {
+        setResult('buildResult', '', false, true);
+        return;
+      }
+
+      let url = `${proto}://${domain}`;
+      if (port) url += `:${port}`;
+      if (path) url += path.startsWith('/') ? path : '/' + path;
+
+      if (params) {
+        const pairs = params.split('\n').map(l => l.trim()).filter(Boolean);
+        const qs = pairs.map(p => {
+          const [k, ...v] = p.split('=');
+          return `${encodeURIComponent(k.trim())}=${encodeURIComponent(v.join('=').trim())}`;
+        }).join('&');
+        if (qs) url += '?' + qs;
+      }
+
+      if (hash) url += '#' + hash;
+      setResult('buildResult', url);
+    }
+
+    // ── Init ──
+    generateQR();
+  </script>
+</body>
+</html>
