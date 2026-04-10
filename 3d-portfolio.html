@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sajin Karki — 3D Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #060810;
+      --accent: #7effa0;
+      --blue: #60a5fa;
+      --pink: #f472b6;
+      --gold: #fbbf24;
+      --text: #dce4f5;
+      --muted: #566480;
+      --font-d: 'Syne', sans-serif;
+      --font-m: 'Space Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: var(--bg);
+      font-family: var(--font-m);
+      color: var(--text);
+      user-select: none;
+    }
+
+    /* Aurora background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(126,255,160,0.07), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 10%,  rgba(96,165,250,0.06), transparent),
+        radial-gradient(ellipse 50% 30% at 50% 100%, rgba(167,139,250,0.04), transparent);
+      animation: auroraShift 18s ease-in-out infinite alternate;
+    }
+    @keyframes auroraShift {
+      0%   { opacity:0.7; transform:scale(1)    translateY(0); }
+      100% { opacity:1;   transform:scale(1.04) translateY(-15px); }
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(6,8,16,0.7);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-logo {
+      font-family: var(--font-d);
+      font-size: 1rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--blue));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-hint {
+      font-size: 0.7rem; color: var(--muted);
+      letter-spacing: 0.06em;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .hint-key {
+      padding: 0.1rem 0.4rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px; font-size: 0.65rem;
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* SCENE CONTAINER */
+    .scene-wrap {
+      position: fixed; inset: 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      perspective: 1200px;
+    }
+
+    /* SLIDE TRACK */
+    .slide-track {
+      position: relative;
+      width: 720px; height: 440px;
+      transform-style: preserve-3d;
+      transform: rotateY(-8deg) rotateX(4deg);
+      transition: transform 0.08s linear;
+    }
+
+    /* SLIDES */
+    .slide {
+      position: absolute; inset: 0;
+      border-radius: 20px;
+      padding: 3rem;
+      backface-visibility: hidden;
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.5s ease,
+                  filter 0.5s ease;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow:
+        0 40px 80px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(255,255,255,0.02),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+      overflow: hidden;
+    }
+
+    .slide::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: inherit;
+      border-radius: 20px;
+      filter: blur(0);
+      z-index: -1;
+    }
+
+    /* Slide states */
+    .slide.active {
+      transform: translateZ(0) translateY(0) scale(1);
+      opacity: 1; filter: blur(0);
+      z-index: 10;
+    }
+    .slide.prev-1 {
+      transform: translateZ(-80px) translateY(-110%) rotateX(12deg) scale(0.92);
+      opacity: 0.55; filter: blur(1px);
+      z-index: 9;
+    }
+    .slide.prev-2 {
+      transform: translateZ(-160px) translateY(-210%) rotateX(20deg) scale(0.84);
+      opacity: 0.25; filter: blur(2px);
+      z-index: 8;
+    }
+    .slide.next-1 {
+      transform: translateZ(-80px) translateY(110%) rotateX(-12deg) scale(0.92);
+      opacity: 0.55; filter: blur(1px);
+      z-index: 9;
+    }
+    .slide.next-2 {
+      transform: translateZ(-160px) translateY(210%) rotateX(-20deg) scale(0.84);
+      opacity: 0.25; filter: blur(2px);
+      z-index: 8;
+    }
+    .slide.hidden {
+      transform: translateZ(-300px) translateY(300%) scale(0.6);
+      opacity: 0; pointer-events: none; z-index: 1;
+    }
+
+    /* SLIDE THEMES */
+    .slide-hero   { background: linear-gradient(135deg, #0a1628, #0d1f35); }
+    .slide-about  { background: linear-gradient(135deg, #0f1a10, #0a1f12); }
+    .slide-tools  { background: linear-gradient(135deg, #1a0f1a, #150d20); }
+    .slide-weather{ background: linear-gradient(135deg, #0a1525, #0d1c38); }
+    .slide-pdf    { background: linear-gradient(135deg, #1a1208, #201508); }
+    .slide-clock  { background: linear-gradient(135deg, #0a1520, #08101c); }
+    .slide-pwd    { background: linear-gradient(135deg, #1a0a10, #1f0d15); }
+    .slide-math   { background: linear-gradient(135deg, #101a0a, #141f0d); }
+    .slide-contact{ background: linear-gradient(135deg, #0a0a18, #0d0d22); }
+
+    /* SLIDE CONTENT */
+    .slide-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px; margin-bottom: 1.2rem;
+    }
+
+    .slide-title {
+      font-family: var(--font-d);
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      font-weight: 800; letter-spacing: -0.04em;
+      line-height: 1.05; margin-bottom: 0.8rem;
+    }
+
+    .slide-sub {
+      font-size: 0.82rem; line-height: 1.75;
+      opacity: 0.65; max-width: 420px;
+      margin-bottom: 1.5rem;
+    }
+
+    .slide-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.7rem; margin-top: 0.8rem;
+    }
+
+    .slide-card {
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .slide-card-label { font-size: 0.6rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.1em; }
+    .slide-card-val { font-family: var(--font-d); font-size: 1.1rem; font-weight: 700; margin-top: 0.2rem; }
+
+    .slide-tags {
+      display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 1rem;
+    }
+    .slide-pill {
+      font-size: 0.65rem; padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .slide-link {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      margin-top: 1.2rem; font-size: 0.78rem; font-weight: 700;
+      text-decoration: none; padding: 0.55rem 1.1rem;
+      border-radius: 8px; transition: all 0.2s;
+    }
+
+    .slide-deco {
+      position: absolute; right: 2.5rem; top: 50%;
+      transform: translateY(-50%);
+      font-size: 6rem; opacity: 0.08;
+      pointer-events: none;
+    }
+
+    /* Slide number indicator */
+    .slide-num {
+      position: absolute; bottom: 1.5rem; right: 1.5rem;
+      font-size: 0.65rem; opacity: 0.3; letter-spacing: 0.1em;
+    }
+
+    /* PERSON / AVATAR */
+    .person-wrap {
+      position: fixed; bottom: 0; right: 8%;
+      width: 160px; z-index: 50;
+      pointer-events: none;
+    }
+
+    .person {
+      position: relative;
+      animation: personIdle 3s ease-in-out infinite;
+    }
+
+    @keyframes personIdle {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    .person.moving-up {
+      animation: personUp 0.5s ease-in-out;
+    }
+    .person.moving-down {
+      animation: personDown 0.5s ease-in-out;
+    }
+
+    @keyframes personUp {
+      0%   { transform: translateY(0) rotate(0deg); }
+      30%  { transform: translateY(-20px) rotate(-4deg); }
+      60%  { transform: translateY(-10px) rotate(2deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+    @keyframes personDown {
+      0%   { transform: translateY(0) rotate(0deg); }
+      30%  { transform: translateY(15px) rotate(4deg); }
+      60%  { transform: translateY(5px) rotate(-2deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+
+    /* SVG person */
+    .person svg { width: 160px; height: auto; display: block; }
+
+    /* Speech bubble */
+    .speech-bubble {
+      position: absolute;
+      bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%) scale(0);
+      background: rgba(22,22,40,0.95);
+      border: 1px solid rgba(126,255,160,0.3);
+      border-radius: 12px; padding: 0.5rem 0.9rem;
+      font-size: 0.7rem; color: var(--accent);
+      white-space: nowrap;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      backdrop-filter: blur(8px);
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute; top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: rgba(126,255,160,0.3);
+    }
+    .speech-bubble.show { transform: translateX(-50%) scale(1); }
+
+    /* NAV DOTS */
+    .nav-dots {
+      position: fixed; left: 2rem; top: 50%;
+      transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 0.6rem;
+      z-index: 50;
+    }
+    .nav-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      cursor: pointer; transition: all 0.3s;
+      border: none; outline: none;
+    }
+    .nav-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      transform: scale(1.4);
+    }
+    .nav-dot:hover:not(.active) { background: rgba(255,255,255,0.4); }
+
+    /* SLIDE COUNTER */
+    .slide-counter {
+      position: fixed; bottom: 2rem; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem; color: var(--muted);
+      letter-spacing: 0.1em; z-index: 50;
+    }
+
+    /* ARROW BUTTONS */
+    .arrow-btn {
+      position: fixed; left: 50%; z-index: 50;
+      transform: translateX(-50%);
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text); font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; backdrop-filter: blur(8px);
+    }
+    .arrow-btn:hover { background: rgba(126,255,160,0.15); border-color: var(--accent); }
+    .arrow-up { top: 5rem; }
+    .arrow-dn { bottom: 4rem; }
+
+    /* MOBILE */
+    @media (max-width: 700px) {
+      .slide-track { width: 90vw; height: auto; min-height: 300px; }
+      .slide { padding: 1.8rem; }
+      .slide-title { font-size: 1.4rem; }
+      .person-wrap { display: none; }
+      .slide-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">&lt;SajinKarki /&gt;</div>
+    <div class="nav-hint">
+      <span class="hint-key">↑↓</span> Navigate
+      <span class="hint-key">scroll</span> Scroll
+      <span class="hint-key">click dots</span> Jump
+    </div>
+    <a href="https://sajinkarki.github.io" style="font-size:0.75rem;color:var(--muted);text-decoration:none;">← Portfolio</a>
+  </nav>
+
+  <!-- SCENE -->
+  <div class="scene-wrap">
+    <div class="slide-track" id="track">
+
+      <!-- SLIDE 0: HERO -->
+      <div class="slide slide-hero active" data-idx="0">
+        <div class="slide-deco">👨‍💻</div>
+        <div class="slide-tag" style="background:rgba(126,255,160,0.1);border:1px solid rgba(126,255,160,0.25);color:var(--accent);">
+          <span>●</span> Available for collaboration
+        </div>
+        <div class="slide-title" style="background:linear-gradient(135deg,#dce4f5,#7effa0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          I build<br/>things that<br/>work.
+        </div>
+        <div class="slide-sub">Software engineer & builder based in Kathmandu. Mini projects, experiments, and tools — all live, all open.</div>
+        <div class="slide-tags">
+          <span class="slide-pill">Python</span>
+          <span class="slide-pill">JavaScript</span>
+          <span class="slide-pill">React</span>
+          <span class="slide-pill">HTML/CSS</span>
+          <span class="slide-pill">Git</span>
+        </div>
+        <div class="slide-num">01 / 09</div>
+      </div>
+
+      <!-- SLIDE 1: ABOUT -->
+      <div class="slide slide-about hidden" data-idx="1">
+        <div class="slide-deco">🌏</div>
+        <div class="slide-tag" style="background:rgba(126,255,160,0.08);border:1px solid rgba(126,255,160,0.2);color:var(--accent);">About</div>
+        <div class="slide-title" style="color:#7effa0;">Who I Am</div>
+        <div class="slide-sub">A software engineer passionate about building small, meaningful digital things. From CLI tools to web apps — because good work deserves to be seen.</div>
+        <div class="slide-grid">
+          <div class="slide-card">
+            <div class="slide-card-label">Projects</div>
+            <div class="slide-card-val" style="color:var(--accent);">12+</div>
+          </div>
+          <div class="slide-card">
+            <div class="slide-card-label">Open Source</div>
+            <div class="slide-card-val" style="color:var(--accent);">5</div>
+          </div>
+          <div class="slide-card">
+            <div class="slide-card-label">Location</div>
+            <div class="slide-card-val" style="font-size:0.85rem;">Kathmandu 🇳🇵</div>
+          </div>
+          <div class="slide-card">
+            <div class="slide-card-label">Building since</div>
+            <div class="slide-card-val" style="color:var(--accent);">3 yrs</div>
+          </div>
+        </div>
+        <div class="slide-num">02 / 09</div>
+      </div>
+
+      <!-- SLIDE 2: TULNEST -->
+      <div class="slide slide-tools hidden" data-idx="2">
+        <div class="slide-deco">⚡</div>
+        <div class="slide-tag" style="background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.25);color:#a78bfa;">Tools Platform</div>
+        <div class="slide-title" style="color:#a78bfa;">Tulnest</div>
+        <div class="slide-sub">A nest of browser-based tools — free, private, no API key needed. Everything runs on your device.</div>
+        <div class="slide-grid">
+          <div class="slide-card"><div class="slide-card-label">Tools Live</div><div class="slide-card-val" style="color:#a78bfa;">7+</div></div>
+          <div class="slide-card"><div class="slide-card-label">Server Uploads</div><div class="slide-card-val" style="color:#4ade80;">Zero</div></div>
+          <div class="slide-card"><div class="slide-card-label">Cost</div><div class="slide-card-val" style="color:#4ade80;">$0 forever</div></div>
+          <div class="slide-card"><div class="slide-card-label">API Key Required</div><div class="slide-card-val" style="color:#4ade80;">Never</div></div>
+        </div>
+        <a href="https://sajinkarki.github.io/tulnest/" class="slide-link" style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;" target="_blank">Visit Tulnest →</a>
+        <div class="slide-num">03 / 09</div>
+      </div>
+
+      <!-- SLIDE 3: WEATHER -->
+      <div class="slide slide-weather hidden" data-idx="3">
+        <div class="slide-deco">🌤️</div>
+        <div class="slide-tag" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);color:var(--blue);">Featured Tool</div>
+        <div class="slide-title" style="color:var(--blue);">Weather Tracker</div>
+        <div class="slide-sub">Real-time weather for any city. 7-day forecast, hourly data, UV index, dynamic sky background. Powered by Open-Meteo — zero API key.</div>
+        <div class="slide-tags">
+          <span class="slide-pill">Open-Meteo API</span>
+          <span class="slide-pill">OpenStreetMap</span>
+          <span class="slide-pill">No signup</span>
+          <span class="slide-pill">GPS support</span>
+        </div>
+        <a href="https://sajinkarki.github.io/tulnest/tools/weather-tracker/" class="slide-link" style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.3);color:var(--blue);" target="_blank">Try it →</a>
+        <div class="slide-num">04 / 09</div>
+      </div>
+
+      <!-- SLIDE 4: WORD TO PDF -->
+      <div class="slide slide-pdf hidden" data-idx="4">
+        <div class="slide-deco">📄</div>
+        <div class="slide-tag" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);color:var(--gold);">Tool</div>
+        <div class="slide-title" style="color:var(--gold);">Word → PDF</div>
+        <div class="slide-sub">Upload .docx, download PDF instantly. Choose page size, orientation, font. File never leaves your browser — mammoth.js + jsPDF.</div>
+        <div class="slide-grid">
+          <div class="slide-card"><div class="slide-card-label">Server time</div><div class="slide-card-val" style="color:#4ade80;">0ms</div></div>
+          <div class="slide-card"><div class="slide-card-label">File size limit</div><div class="slide-card-val" style="color:#4ade80;">∞</div></div>
+        </div>
+        <a href="https://sajinkarki.github.io/tulnest/tools/word-to-pdf/" class="slide-link" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:var(--gold);" target="_blank">Try it →</a>
+        <div class="slide-num">05 / 09</div>
+      </div>
+
+      <!-- SLIDE 5: LIVE CLOCK -->
+      <div class="slide slide-clock hidden" data-idx="5">
+        <div class="slide-deco">🕐</div>
+        <div class="slide-tag" style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);color:var(--blue);">Tool</div>
+        <div class="slide-title" style="color:var(--blue);">Live Analog Clock</div>
+        <div class="slide-sub">Synced with worldtimeapi.org. Smooth canvas-rendered hands. 5 world clocks, timezone switcher, works offline after first load.</div>
+        <div class="slide-tags">
+          <span class="slide-pill">Canvas API</span>
+          <span class="slide-pill">worldtimeapi.org</span>
+          <span class="slide-pill">Offline ready</span>
+        </div>
+        <a href="https://sajinkarki.github.io/tulnest/tools/live-clock/" class="slide-link" style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);color:var(--blue);" target="_blank">Try it →</a>
+        <div class="slide-num">06 / 09</div>
+      </div>
+
+      <!-- SLIDE 6: PASSWORD -->
+      <div class="slide slide-pwd hidden" data-idx="6">
+        <div class="slide-deco">🔐</div>
+        <div class="slide-tag" style="background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.25);color:var(--pink);">Tool</div>
+        <div class="slide-title" style="color:var(--pink);">Password Generator</div>
+        <div class="slide-sub">Custom length, special chars, numbers, no repeats, exclude ambiguous. Web Crypto API — cryptographically secure. Nothing sent anywhere.</div>
+        <div class="slide-tags">
+          <span class="slide-pill">Web Crypto API</span>
+          <span class="slide-pill">Strength meter</span>
+          <span class="slide-pill">History</span>
+          <span class="slide-pill">Copy ready</span>
+        </div>
+        <a href="https://sajinkarki.github.io/tulnest/tools/password-generator/" class="slide-link" style="background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.25);color:var(--pink);" target="_blank">Try it →</a>
+        <div class="slide-num">07 / 09</div>
+      </div>
+
+      <!-- SLIDE 7: MATH -->
+      <div class="slide slide-math hidden" data-idx="7">
+        <div class="slide-deco">🔢</div>
+        <div class="slide-tag" style="background:rgba(126,255,160,0.08);border:1px solid rgba(126,255,160,0.2);color:var(--accent);">Tool</div>
+        <div class="slide-title" style="color:var(--accent);">Math Table Generator</div>
+        <div class="slide-sub">Generate multiplication tables instantly. Single table or all 2–20 at once. Range ×1 to ×100. Print-ready. Copy to clipboard.</div>
+        <div class="slide-grid">
+          <div class="slide-card"><div class="slide-card-label">Max number</div><div class="slide-card-val" style="color:var(--accent);">100</div></div>
+          <div class="slide-card"><div class="slide-card-label">Max range</div><div class="slide-card-val" style="color:var(--accent);">×100</div></div>
+        </div>
+        <a href="https://sajinkarki.github.io/tulnest/tools/math-table/" class="slide-link" style="background:rgba(126,255,160,0.1);border:1px solid rgba(126,255,160,0.25);color:var(--accent);" target="_blank">Try it →</a>
+        <div class="slide-num">08 / 09</div>
+      </div>
+
+      <!-- SLIDE 8: CONTACT -->
+      <div class="slide hidden" style="background:linear-gradient(135deg,#0a0a18,#0d0d22);" data-idx="8">
+        <div class="slide-deco">✉️</div>
+        <div class="slide-tag" style="background:rgba(126,255,160,0.08);border:1px solid rgba(126,255,160,0.2);color:var(--accent);">Get in Touch</div>
+        <div class="slide-title" style="background:linear-gradient(135deg,#dce4f5,#7effa0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          Let's Build<br/>Something.
+        </div>
+        <div class="slide-sub">Open to collaborations, freelance projects, and interesting ideas. Based in Kathmandu, building globally.</div>
+        <div class="slide-grid">
+          <div class="slide-card">
+            <div class="slide-card-label">GitHub</div>
+            <div class="slide-card-val" style="font-size:0.78rem;">sajinkarki</div>
+          </div>
+          <div class="slide-card">
+            <div class="slide-card-label">Portfolio</div>
+            <div class="slide-card-val" style="font-size:0.72rem;">sajinkarki.github.io</div>
+          </div>
+        </div>
+        <a href="https://sajinkarki.github.io#contact" class="slide-link" style="background:rgba(126,255,160,0.12);border:1px solid rgba(126,255,160,0.3);color:var(--accent);" target="_blank">Contact Me →</a>
+        <div class="slide-num">09 / 09</div>
+      </div>
+
+    </div><!-- /track -->
+  </div><!-- /scene -->
+
+  <!-- PERSON -->
+  <div class="person-wrap" id="personWrap">
+    <div class="speech-bubble" id="bubble">Swipe up! ↑</div>
+    <div class="person" id="person">
+      <svg viewBox="0 0 160 280" xmlns="http://www.w3.org/2000/svg">
+        <!-- Shadow -->
+        <ellipse cx="80" cy="275" rx="35" ry="6" fill="rgba(0,0,0,0.3)"/>
+        <!-- Shoes -->
+        <ellipse cx="65" cy="262" rx="14" ry="6" fill="#1a1a2e" transform="rotate(-5,65,262)"/>
+        <ellipse cx="95" cy="262" rx="14" ry="6" fill="#1a1a2e" transform="rotate(5,95,262)"/>
+        <!-- Pants -->
+        <rect x="55" y="185" width="22" height="75" rx="8" fill="#1e2d45"/>
+        <rect x="83" y="185" width="22" height="75" rx="8" fill="#162035"/>
+        <!-- Body -->
+        <rect x="45" y="110" width="70" height="85" rx="16" fill="#0d4f3c"/>
+        <!-- Hoodie accent -->
+        <rect x="68" y="110" width="24" height="60" rx="4" fill="#0a3d2e"/>
+        <!-- Collar -->
+        <polygon points="68,110 92,110 80,130" fill="#7effa0" opacity="0.6"/>
+        <!-- Arms -->
+        <g id="leftArm">
+          <rect x="20" y="115" width="28" height="14" rx="7" fill="#0d4f3c" transform="rotate(15,34,122)"/>
+          <rect x="10" y="126" width="28" height="12" rx="6" fill="#f5c5a3" transform="rotate(20,24,132)"/>
+        </g>
+        <g id="rightArm">
+          <rect x="112" y="115" width="28" height="14" rx="7" fill="#0d4f3c" transform="rotate(-15,126,122)"/>
+          <rect x="122" y="126" width="28" height="12" rx="6" fill="#f5c5a3" transform="rotate(-20,136,132)"/>
+        </g>
+        <!-- Neck -->
+        <rect x="70" y="95" width="20" height="18" rx="6" fill="#f5c5a3"/>
+        <!-- Head -->
+        <ellipse cx="80" cy="78" rx="32" ry="34" fill="#f5c5a3"/>
+        <!-- Hair -->
+        <ellipse cx="80" cy="50" rx="32" ry="18" fill="#2a1a0a"/>
+        <rect x="48" y="46" width="12" height="22" rx="6" fill="#2a1a0a"/>
+        <rect x="100" y="46" width="12" height="22" rx="6" fill="#2a1a0a"/>
+        <!-- Eyes -->
+        <ellipse cx="68" cy="78" rx="5" ry="6" fill="white"/>
+        <ellipse cx="92" cy="78" rx="5" ry="6" fill="white"/>
+        <ellipse cx="69" cy="79" rx="3" ry="3.5" fill="#1a0a00"/>
+        <ellipse cx="93" cy="79" rx="3" ry="3.5" fill="#1a0a00"/>
+        <!-- Smile -->
+        <path d="M70,92 Q80,100 90,92" stroke="#c0705a" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Laptop/device in hands -->
+        <rect x="32" y="148" width="96" height="62" rx="6" fill="#0d1117" transform="rotate(-2,80,179)"/>
+        <rect x="36" y="152" width="88" height="54" rx="4" fill="#7effa0" opacity="0.08" transform="rotate(-2,80,179)"/>
+        <!-- Screen glow -->
+        <rect x="40" y="156" width="80" height="46" rx="3" fill="none" stroke="#7effa0" stroke-width="0.5" opacity="0.3" transform="rotate(-2,80,179)"/>
+        <!-- Code lines on screen -->
+        <rect x="44" y="162" width="40" height="2.5" rx="1" fill="#7effa0" opacity="0.4" transform="rotate(-2,80,179)"/>
+        <rect x="44" y="168" width="55" height="2.5" rx="1" fill="#60a5fa" opacity="0.35" transform="rotate(-2,80,179)"/>
+        <rect x="44" y="174" width="35" height="2.5" rx="1" fill="#f472b6" opacity="0.3" transform="rotate(-2,80,179)"/>
+        <rect x="44" y="180" width="48" height="2.5" rx="1" fill="#7effa0" opacity="0.3" transform="rotate(-2,80,179)"/>
+        <rect x="44" y="186" width="62" height="2.5" rx="1" fill="#60a5fa" opacity="0.25" transform="rotate(-2,80,179)"/>
+        <!-- Keyboard -->
+        <rect x="32" y="207" width="96" height="8" rx="3" fill="#111827" transform="rotate(-2,80,211)"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- NAV DOTS -->
+  <div class="nav-dots" id="navDots"></div>
+
+  <!-- ARROWS -->
+  <button class="arrow-btn arrow-up" onclick="navigate(-1)">↑</button>
+  <button class="arrow-btn arrow-dn" onclick="navigate(1)">↓</button>
+
+  <!-- COUNTER -->
+  <div class="slide-counter" id="counter">1 / 9</div>
+
+  <script>
+    const TOTAL = 9;
+    let current = 0;
+    let isAnimating = false;
+
+    const slides   = document.querySelectorAll('.slide');
+    const person   = document.getElementById('person');
+    const bubble   = document.getElementById('bubble');
+    const counter  = document.getElementById('counter');
+    const track    = document.getElementById('track');
+    const dotsWrap = document.getElementById('navDots');
+
+    const BUBBLES = [
+      'Swipe up! ↑', 'Meet Sajin! 👋', 'Check Tulnest! ⚡',
+      'Live weather! 🌤️', 'No server! 🔒', 'Tick tock! ⏰',
+      'Stay secure! 🔐', '2 × 7 = 14 ✓', "Let's connect! 🚀"
+    ];
+
+    // Build nav dots
+    for (let i = 0; i < TOTAL; i++) {
+      const d = document.createElement('button');
+      d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+      d.onclick = () => goTo(i);
+      dotsWrap.appendChild(d);
+    }
+
+    function getClass(idx) {
+      const diff = idx - current;
+      if (diff === 0) return 'active';
+      if (diff === -1) return 'prev-1';
+      if (diff === -2) return 'prev-2';
+      if (diff === 1)  return 'next-1';
+      if (diff === 2)  return 'next-2';
+      return 'hidden';
+    }
+
+    function updateSlides() {
+      slides.forEach((s, i) => {
+        s.className = 'slide ' + (s.dataset.theme || getSlideTheme(i)) + ' ' + getClass(i);
+      });
+      dotsWrap.querySelectorAll('.nav-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === current);
+      });
+      counter.textContent = (current + 1) + ' / ' + TOTAL;
+    }
+
+    function getSlideTheme(i) {
+      const themes = ['slide-hero','slide-about','slide-tools','slide-weather','slide-pdf','slide-clock','slide-pwd','slide-math',''];
+      return themes[i] || '';
+    }
+
+    function animatePerson(dir) {
+      person.classList.remove('moving-up','moving-down');
+      void person.offsetWidth; // reflow
+      person.classList.add(dir > 0 ? 'moving-down' : 'moving-up');
+      setTimeout(() => person.classList.remove('moving-up','moving-down'), 600);
+
+      // Show bubble
+      bubble.textContent = BUBBLES[current] || '✨';
+      bubble.classList.add('show');
+      setTimeout(() => bubble.classList.remove('show'), 2000);
+    }
+
+    function navigate(dir) {
+      if (isAnimating) return;
+      const next = current + dir;
+      if (next < 0 || next >= TOTAL) return;
+      isAnimating = true;
+      current = next;
+      updateSlides();
+      animatePerson(dir);
+      setTimeout(() => { isAnimating = false; }, 600);
+    }
+
+    function goTo(idx) {
+      if (isAnimating || idx === current) return;
+      const dir = idx > current ? 1 : -1;
+      current = idx;
+      isAnimating = true;
+      updateSlides();
+      animatePerson(dir);
+      setTimeout(() => { isAnimating = false; }, 600);
+    }
+
+    // Initialize
+    updateSlides();
+
+    // Show initial bubble
+    setTimeout(() => {
+      bubble.classList.add('show');
+      setTimeout(() => bubble.classList.remove('show'), 2500);
+    }, 1500);
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  navigate(-1);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') navigate(1);
+    });
+
+    // Scroll wheel
+    let scrollCooldown = false;
+    document.addEventListener('wheel', (e) => {
+      if (scrollCooldown) return;
+      scrollCooldown = true;
+      navigate(e.deltaY > 0 ? 1 : -1);
+      setTimeout(() => { scrollCooldown = false; }, 700);
+    }, { passive: true });
+
+    // Touch swipe
+    let touchY = 0;
+    document.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+      const dy = touchY - e.changedTouches[0].clientY;
+      if (Math.abs(dy) > 40) navigate(dy > 0 ? 1 : -1);
+    }, { passive: true });
+
+    // 3D mouse tilt
+    document.addEventListener('mousemove', (e) => {
+      const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+      const dx = (e.clientX - cx) / cx;
+      const dy = (e.clientY - cy) / cy;
+      track.style.transform = `rotateY(${-8 + dx * 6}deg) rotateX(${4 - dy * 4}deg)`;
+    });
+  </script>
+</body>
+</html>
